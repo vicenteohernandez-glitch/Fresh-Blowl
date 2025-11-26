@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Pedido Confirmado - Fresh Bowl</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
+<style>
+body {
+  margin:0; font-family:"Poppins",sans-serif;
+  background:#f4fff5;
+  display:flex; justify-content:center; align-items:center;
+  height:100vh;
+}
+.card {
+  background:#fff; padding:25px; width:360px;
+  border-radius:15px; text-align:center;
+  box-shadow:0 5px 18px rgba(0,0,0,.1);
+}
+h2 { color:#2e7d32; }
+button {
+  margin-top:12px; width:100%; padding:12px;
+  border:none; border-radius:8px; font-weight:bold;
+  background:#4CAF50; color:white; cursor:pointer;
+}
+button:hover { background:#388e3c; }
+</style>
+</head>
+
+<body>
+<div class="card">
+  <h2>🎉 ¡Gracias por tu compra!</h2>
+  <p>Tu pedido ha sido confirmado y está siendo preparado 🥗</p>
+
+  <button onclick="volverInicio()">Volver al inicio</button>
+</div>
+
+<script>
+function volverInicio(){
+  localStorage.removeItem("cart"); // limpiar carrito
+  localStorage.removeItem("fb_envio"); // limpiar método entrega
+  location.href = "index.html";
+}
+</script>
+
+</body>
+</html>

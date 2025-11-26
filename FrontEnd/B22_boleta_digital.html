@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>B21: Pasarela de Pago</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: url('https://images.unsplash.com/photo-1612874742935-6b0f8c5a4e3a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8cGFnb3xlbnwwfHx8fDE2OTc4ODUyMjc&ixlib=rb-4.0.3&q=80&w=1080') no-repeat center center fixed;
+    background-size: cover;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+  }
+  .container {
+    background-color: rgba(255,255,255,0.95);
+    padding: 30px;
+    border-radius: 10px;
+    max-width: 420px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0px 4px 15px rgba(0,0,0,0.3);
+  }
+  .muted { color:#666; font-size:.9em; }
+  .total { font-weight:bold; margin:6px 0 14px; }
+  input[type="text"], input[type="number"], input[type="month"] {
+    width: 100%; padding: 10px; margin: 10px 0;
+    border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box;
+  }
+  button {
+    background-color: #27ae60; color: white; padding: 10px 20px;
+    border: none; border-radius: 5px; cursor: pointer; width: 100%; font-size: 16px; margin-top: 5px;
+  }
+  button:hover { background-color: #2ecc71; }
+  #cancelarBtn { background:#e74c3c; margin-top:6px }
+  .error { color: #e53935; font-size: 0.95em; margin-top: 10px; font-weight:bold }
+  .success { color: #2e7d32; font-size: 0.95em; margin-top: 10px; font-weight:bold }
+  .links { margin-top:10px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap }
+  .links a { display:inline-block; padding:8px 12px; border-radius:8px; border:2px solid #27ae60; color:#27ae60; text-decoration:none; font-weight:700 }
+  .links a:hover { background:#27ae60; color:#fff }
+  a.back { display:block; margin-top:14px; color:#27ae60; font-weight:bold; text-decoration:none }
+  a.back:hover{ text-decoration:underline }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h3>Pasarela de Pago</h3>
+  <p class="muted">Introduce los datos de tu tarjeta para completar el pago.</p>
+
+  <div id="resumen">
+    <div class="total">Total a pagar: <span id="totalPagar">$0</span></div>
+  </div>
+
+  <input type="text" id="numeroTarjeta" placeholder="Número de tarjeta (16 dígitos)" inputmode="numeric" maxlength="19">
+  <input type="text" id="cvv" placeholder="CVV (3–4 dígitos)" inputmode="numeric" maxlength="4">
+  <input type="month" id="fechaExp" placeholder="Fecha expiración">
+
+  <button id="confirmarPago">Confirmar Pago</button>
+  <button id="cancelarBtn">Cancelar</button>
+
+  <p id="mensajePago" class="error"></p>
+  <div id="postPago" class="links" style="display:none"></div>
+
+  <a href="index.html" class="back">Volver al inicio</a>
+</div>
+
+<script>
+// ======= Utilidades de carrito / pedidos =======
+function getCart(){ return JSON.parse(localStorage.getItem('cart')||"{}"); }
+function setCart(c){ localStorage.setItem('cart', JSON.stringify(c)); }
+function clearCart(){ localStorage.removeItem('cart'); }
+function getOrders(){ return JSON.parse(localStorage.getItem('orders')||"[]"); }
+function setOrders(arr){ localStorage.setItem('orders', JSON.stringify(arr)); }
+function fmtCLP(n){ return '$' + Number(n||0).toLocaleString('es-CL'); }
+
+function totalDesdeCarrito(){
+  const cart = getCart();
+  let subtotal = 0, items = 0;
+  Object.keys(cart).forEach(k=>{
+    subtotal += cart[k].price * cart[k].qty;
+    items += cart[k].qty;
+  });
+  const shipping = items > 0 ? 2500 : 0;
+  return { subtotal, shipping, total: subtotal + shipping };
+}
+
+function crearPedidoDesdeCarrito(email="cliente3@example.com"){
+  const cart = getCart();
+  const keys = Object.keys(cart);
+  if(keys.length === 0) return null;
+
+  const items = keys.map(id => ({
+    id,
+    name: cart[id].name || id.replaceAll('_',' '),
+    qty: cart[id].qty,
+    price: cart[id].price
+  }));
+  const t = totalDesdeCarrito();
+  const order = {
+    id: "ORD-" + Math.floor(Math.random()*90000+10000),
+    dateISO: new Date().toISOString(),
+    email,
+    items,
+    total: t.total,
+    estado: "Pagado"
+  };
+  const orders = getOrders();
+  orders.push(order);
+  setOrders(orders);
+  clearCart();
+  return order;
+}
+
+// ======= Mostrar total del carrito =======
+(function initResumen(){
+  const t = totalDesdeCarrito();
+  document.getElementById('totalPagar').textContent = fmtCLP(t.total);
+})();
+
+// ======= Helpers de validación de tarjeta =======
+function onlyDigits(s){ return (s||'').replace(/\D/g,''); }
+function luhnOk(cardNumber){
+  const s = onlyDigits(cardNumber);
+  if(s.length < 12) return false;
+  let sum = 0, alt = false;
+  for(let i = s.length - 1; i >= 0; i--){
+    let n = parseInt(s[i],10);
+    if(alt){ n *= 2; if(n > 9) n -= 9; }
+    sum += n;
+    alt = !alt;
+  }
+  return sum % 10 === 0;
+}
+function expFuture(yyyyMM){
+  if(!yyyyMM || !/^\d{4}-\d{2}$/.test(yyyyMM)) return false;
+  const [y,m] = yyyyMM.split('-').map(Number);
+  const exp = new Date(y, m-1, 1);
+  const now = new Date();
+  // válido si fin de mes de expiración es posterior a hoy
+  const endOfExp = new Date(y, m, 0, 23,59,59);
+  return endOfExp >= now;
+}
+
+// Formateo amigable del número (xxxx xxxx xxxx xxxx)
+const numeroTarjeta = document.getElementById('numeroTarjeta');
+numeroTarjeta.addEventListener('input', ()=>{
+  const raw = onlyDigits(numeroTarjeta.value).slice(0,16);
+  numeroTarjeta.value = raw.replace(/(\d{4})(?=\d)/g, '$1 ');
+});
+
+// ======= Pago =======
+const cvv = document.getElementById('cvv');
+const fechaExp = document.getElementById('fechaExp');
+const confirmarBtn = document.getElementById('confirmarPago');
+const cancelarBtn = document.getElementById('cancelarBtn');
+const mensajePago = document.getElementById('mensajePago');
+const postPago = document.getElementById('postPago');
+
+function setMsg(text, ok){
+  mensajePago.textContent = text;
+  mensajePago.className = ok ? 'success' : 'error';
+}
+
+confirmarBtn.addEventListener('click', () => {
+  const num = numeroTarjeta.value.trim();
+  const cvvVal = cvv.value.trim();
+  const fecha = fechaExp.value.trim();
+
+  // Validaciones
+  if(!num || !cvvVal || !fecha){
+    setMsg("Completa todos los campos", false);
+    return;
+  }
+  if(!(cvvVal.length>=3 && cvvVal.length<=4 && /^\d+$/.test(cvvVal))){
+    setMsg("CVV inválido", false);
+    return;
+  }
+  if(!expFuture(fecha)){
+    setMsg("La tarjeta está vencida", false);
+    return;
+  }
+
+  // Regla demo que siempre aprueba:
+  const demoOk = (onlyDigits(num) === '1234567890123456' && cvvVal === '123');
+
+  // Luhn para resto de casos
+  const luhnValid = luhnOk(num);
+
+  if(!(demoOk || luhnValid)){
+    setMsg("Pago rechazado ❌ Datos de tarjeta inválidos", false);
+    return;
+  }
+
+  // Crear pedido desde carrito
+  const order = crearPedidoDesdeCarrito("cliente3@example.com");
+  if(!order){
+    setMsg("No tienes productos en el carrito ❌", false);
+    return;
+  }
+
+  setMsg(`Pago aprobado ✔️ Pedido Nº ${order.id}`, true);
+  postPago.style.display = 'flex';
+  postPago.innerHTML = `
+    <a href="B22_Boleta.html">Ver boleta</a>
+    <a href="B25_Estado_Pedido.html">Ver estado</a>
+  `;
+});
+
+cancelarBtn.addEventListener('click', () => {
+  // No borro pedidos; solo limpio carrito si existía para simular cancelación
+  const hadCart = Object.keys(getCart()).length > 0;
+  if(hadCart) clearCart();
+  setMsg("Pago cancelado ❌", false);
+  postPago.style.display = 'none';
+  postPago.innerHTML = '';
+});
+</script>
+
+</body>
+</html>

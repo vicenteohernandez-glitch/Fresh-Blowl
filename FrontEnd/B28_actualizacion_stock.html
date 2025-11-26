@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>B28: Actualización de Stock</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: url('https://images.unsplash.com/photo-1600718371802-9b3cf53f5d99?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080') no-repeat center center fixed;
+    background-size: cover;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+  }
+  .container {
+    background-color: rgba(255,255,255,0.95);
+    padding: 28px;
+    border-radius: 12px;
+    text-align: left;
+    box-shadow: 0px 4px 15px rgba(0,0,0,0.3);
+    width: 420px;
+  }
+  h3 { text-align:center; margin-bottom: 18px; }
+  label { font-weight: bold; margin-top: 8px; display: block; }
+  input, select { width: 100%; padding: 8px; margin: 6px 0 10px; }
+  .row { display:flex; gap:10px; }
+  .row > div { flex:1; }
+  .muted { color:#666; font-size: 13px; }
+  .pill {
+    display:inline-block; padding:4px 9px; border-radius:999px; font-size:12px; margin-left:6px;
+    background:#eee;
+  }
+  .ok { color:#27ae60; }
+  .err { color:#c0392b; }
+  .info { color:#2c3e50; }
+  .btn {
+    background-color: #c0392b;
+    color: white;
+    border: none;
+    padding: 11px;
+    width: 100%;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 15px;
+  }
+  .btn:hover { background-color: #e74c3c; }
+  .btn:disabled { opacity: .6; cursor: not-allowed; }
+  .feedback { margin-top:10px; font-weight:bold; }
+  .preview {
+    background:#f6f8f9; border:1px solid #e3e8ec; border-radius:8px; padding:10px; margin-top:8px;
+    font-size: 14px;
+  }
+  .hist {
+    margin-top:14px; font-size: 13px; max-height: 140px; overflow:auto;
+    border-top:1px dashed #ddd; padding-top:10px;
+  }
+  .hist-item { margin:6px 0; }
+  a { color:#c0392b; display:inline-block; margin-top: 14px; text-align:center; width:100%; text-decoration:none; }
+  a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h3>Actualización de Stock</h3>
+
+  <label for="producto">Producto</label>
+  <select id="producto">
+    <option value="ENS01">ENS01 — Ensalada Clásica</option>
+    <option value="ENS02">ENS02 — Ensalada Brasileña</option>
+    <option value="PRO01">PRO01 — Pollo Grillado</option>
+  </select>
+
+  <div class="row">
+    <div>
+      <label>Stock actual</label>
+      <div id="stockActual" class="preview">—</div>
+    </div>
+    <div>
+      <label>Precio actual</label>
+      <div id="precioActual" class="preview">—</div>
+    </div>
+  </div>
+
+  <label for="lote">Nuevo lote recibido (unid.) <span class="muted">(≥ 0)</span></label>
+  <input type="number" id="lote" min="0" placeholder="Ej: 50">
+
+  <label for="ajuste">Ajuste manual <span class="muted">(puede ser negativo)</span></label>
+  <input type="number" id="ajuste" step="1" placeholder="Ej: -3">
+
+  <div class="row">
+    <div>
+      <label for="precio">Nuevo precio (CLP)</label>
+      <input type="number" id="precio" step="1" min="0" placeholder="Ej: 3490">
+    </div>
+    <div>
+      <label for="motivo">Motivo</label>
+      <select id="motivo">
+        <option value="Ingreso de lote">Ingreso de lote</option>
+        <option value="Merma">Merma</option>
+        <option value="Reconteo">Reconteo</option>
+        <option value="Cambio de precio">Cambio de precio</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="preview" id="resumen">
+    Stock final previsto: <strong id="stockPrevisto">—</strong>
+    <span class="pill info" id="deltaPill" style="display:none;"></span>
+  </div>
+
+  <button class="btn" id="guardar">Guardar cambios</button>
+  <div id="msg" class="feedback"></div>
+
+  <div class="hist" id="historial">
+    <strong>Historial reciente</strong>
+    <div class="hist-item muted">No hay movimientos aún.</div>
+  </div>
+
+  <a href="index.html">Volver al inicio</a>
+</div>
+
+<script>
+/* ========= Utilidades ========= */
+const fmtCLP = (v) => new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format(Number(v||0));
+
+const LS_KEY = 'fb_stock';
+
+/* Seed inicial si no existe */
+const defaults = {
+  ENS01: { sku:'ENS01', nombre:'Ensalada Clásica', stock: 120, precio: 2990, hist: [] },
+  ENS02: { sku:'ENS02', nombre:'Ensalada Brasileña', stock: 35,  precio: 3490, hist: [] },
+  PRO01: { sku:'PRO01', nombre:'Pollo Grillado',     stock: 80,  precio: 1590, hist: [] }
+};
+
+function loadDB() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    return raw ? JSON.parse(raw) : { ...defaults };
+  } catch(e) {
+    console.warn('localStorage no disponible, usando memoria.', e);
+    return { ...defaults };
+  }
+}
+
+function saveDB(db) {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(db)); } catch(e) { /* noop */ }
+}
+
+/* ========= Estado ========= */
+let DB = loadDB();
+
+const $ = (id) => document.getElementById(id);
+const productoEl = $('producto');
+const stockActualEl = $('stockActual');
+const precioActualEl = $('precioActual');
+const loteEl = $('lote');
+const ajusteEl = $('ajuste');
+const precioEl = $('precio');
+const motivoEl = $('motivo');
+const stockPrevistoEl = $('stockPrevisto');
+const deltaPillEl = $('deltaPill');
+const guardarBtn = $('guardar');
+const msgEl = $('msg');
+const historialEl = $('historial');
+
+function renderProducto() {
+  const sku = productoEl.value;
+  const item = DB[sku];
+  stockActualEl.textContent = item.stock + ' unid.';
+  precioActualEl.textContent = fmtCLP(item.precio);
+  loteEl.value = '';
+  ajusteEl.value = '';
+  precioEl.value = '';
+  msgEl.textContent = '';
+  msgEl.className = 'feedback';
+  preview();
+  renderHistorial();
+}
+
+function preview() {
+  const sku = productoEl.value;
+  const item = DB[sku];
+  const lote = Number(loteEl.value || 0);
+  const ajuste = Number(ajusteEl.value || 0);
+  const final = item.stock + lote + ajuste;
+
+  stockPrevistoEl.textContent = isNaN(final) ? '—' : final + ' unid.';
+  const delta = lote + ajuste;
+
+  if (delta !== 0) {
+    deltaPillEl.style.display = 'inline-block';
+    deltaPillEl.textContent = (delta > 0 ? '+' : '') + delta + ' unid.';
+  } else {
+    deltaPillEl.style.display = 'none';
+  }
+
+  stockPrevistoEl.style.color = (final < 0) ? '#c0392b' : '#2c3e50';
+}
+
+function renderHistorial() {
+  const sku = productoEl.value;
+  const item = DB[sku];
+  const hist = item.hist || [];
+  historialEl.innerHTML = '<strong>Historial reciente</strong>';
+  if (!hist.length) {
+    const div = document.createElement('div');
+    div.className = 'hist-item muted';
+    div.textContent = 'No hay movimientos aún.';
+    historialEl.appendChild(div);
+    return;
+  }
+  hist.slice(-5).reverse().forEach(h => {
+    const div = document.createElement('div');
+    div.className = 'hist-item';
+    const precioTxt = (h.nuevoPrecio != null) ? `, precio: ${fmtCLP(h.nuevoPrecio)}` : '';
+    const deltaTxt = (h.delta>=0?'+':'') + h.delta;
+    div.textContent = `[${new Date(h.fecha).toLocaleString('es-CL')}] ${h.motivo} — Δ ${deltaTxt} unid. → ${h.stockFinal} unid.${precioTxt}`;
+    historialEl.appendChild(div);
+  });
+}
+
+/* ========= Eventos ========= */
+productoEl.addEventListener('change', renderProducto);
+[loteEl, ajusteEl, precioEl].forEach(el => el.addEventListener('input', preview));
+
+guardarBtn.addEventListener('click', () => {
+  const sku = productoEl.value;
+  const item = DB[sku];
+  const lote = Number(loteEl.value || 0);
+  const ajuste = Number(ajusteEl.value || 0);
+  const nuevoPrecio = precioEl.value !== '' ? Number(precioEl.value) : null;
+  const motivo = motivoEl.value;
+
+  const hayCambios = (lote !== 0) || (ajuste !== 0) || (nuevoPrecio !== null);
+  if (!hayCambios) {
+    msgEl.textContent = 'Ingrese al menos un cambio para guardar.';
+    msgEl.className = 'feedback err';
+    return;
+  }
+
+  const stockFinal = item.stock + lote + ajuste;
+  if (stockFinal < 0) {
+    msgEl.textContent = 'El stock no puede quedar negativo.';
+    msgEl.className = 'feedback err';
+    return;
+  }
+
+  if (nuevoPrecio !== null && nuevoPrecio < 0) {
+    msgEl.textContent = 'El precio no puede ser negativo.';
+    msgEl.className = 'feedback err';
+    return;
+  }
+
+  // Simula llamado a API
+  guardarBtn.disabled = true;
+  msgEl.textContent = 'Guardando cambios...';
+  msgEl.className = 'feedback info';
+
+  setTimeout(() => {
+    // "Actualiza" base local
+    const delta = lote + ajuste;
+    item.stock = stockFinal;
+    if (nuevoPrecio !== null) item.precio = nuevoPrecio;
+    item.hist = item.hist || [];
+    item.hist.push({
+      fecha: Date.now(),
+      motivo,
+      delta,
+      stockFinal,
+      nuevoPrecio
+    });
+    DB[sku] = item;
+    saveDB(DB);
+
+    // Refresca UI
+    renderProducto();
+    msgEl.textContent = 'Inventario actualizado correctamente ✔️';
+    msgEl.className = 'feedback ok';
+    guardarBtn.disabled = false;
+  }, 800);
+});
+
+/* ========= Init ========= */
+renderProducto();
+</script>
+</body>
+</html>

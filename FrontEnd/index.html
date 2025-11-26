@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fresh Bowl - Venta de Ensaladas</title>
+<style>
+  body { margin:0; font-family:'Poppins',sans-serif; background-color:#f9f9f9; color:#333; }
+  header { background-color:#fff; display:flex; align-items:center; justify-content:space-between; padding:10px 40px; box-shadow:0 2px 8px rgba(0,0,0,0.1); position:sticky; top:0; z-index:100; }
+  .logo { display:flex; align-items:center; gap:10px; }
+  .logo img { height:60px; border-radius:50%; }
+  .logo h1 { font-size:1.6em; color:#4CAF50; }
+  nav ul { list-style:none; display:flex; gap:25px; margin:0; padding:0; }
+  nav a { text-decoration:none; color:#333; font-weight:600; transition:color 0.3s; }
+  nav a:hover { color:#4CAF50; }
+  .nav-buttons { display:flex; align-items:center; gap:15px; position:relative; }
+  .nav-buttons a { background-color:#4CAF50; color:white; padding:8px 14px; border-radius:8px; text-decoration:none; font-weight:bold; transition:background-color 0.3s; }
+  .nav-buttons a:hover { background-color:#388E3C; }
+  .carrito { font-weight:bold; cursor:pointer; }
+  .perfil { position:relative; cursor:pointer; }
+  .perfil-menu { display:none; position:absolute; top:55px; right:0; background-color:white; border:1px solid #ccc; border-radius:8px; width:180px; box-shadow:0 4px 10px rgba(0,0,0,0.1); z-index:200; }
+  .perfil-menu a { display:block; padding:10px; color:#333; text-decoration:none; }
+  .perfil-menu a:hover { background-color:#f1f1f1; }
+
+  .promociones, .productos { padding:40px 20px; text-align:center; }
+  .promociones h2, .productos h2 { color:#388E3C; font-size:1.8em; margin-bottom:25px; }
+  .promociones-contenedor, .productos-contenedor { display:flex; flex-wrap:wrap; justify-content:center; gap:30px; }
+  .promo-item, .producto { width:280px; border-radius:15px; overflow:hidden; box-shadow:0 4px 10px rgba(0,0,0,0.1); background-color:white; transition:transform 0.3s; }
+  .promo-item:hover, .producto:hover { transform:translateY(-5px); }
+  .promo-item img, .producto img { width:100%; height:190px; object-fit:cover; }
+  .promo-item h3, .promo-item p, .producto-info h3, .producto-info p { margin:10px 0; color:#4CAF50; }
+  .promo-item button, .producto-info button { background-color:#4CAF50; color:white; border:none; padding:10px 15px; border-radius:8px; cursor:pointer; font-weight:bold; }
+  .promo-item button:hover, .producto-info button:hover { background-color:#388E3C; }
+
+  .filtro { text-align:center; padding:30px; }
+  .filtro input { width:60%; max-width:400px; padding:10px; border:2px solid #4CAF50; border-radius:8px; font-size:1em; }
+
+  footer { text-align:center; padding:60px 20px; background-color:#333; color:white; margin-top:40px; line-height:1.6; font-size:0.95em; }
+  footer p { margin:5px 0; }
+
+  /* Carrito desplegable fijo (cambio mínimo importante) */
+  #carrito-detalle {
+    display:none; position:fixed; top:80px; right:40px; width:320px; background:#fff; border:1px solid #ccc; border-radius:8px;
+    box-shadow:0 4px 10px rgba(0,0,0,0.1); padding:15px; z-index:300;
+  }
+  #carrito-detalle h3 { margin-top:0; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <img src="https://i.pinimg.com/originals/9f/65/3f/9f653f870d7eda5e3d7068f9ef45fccc.jpg" alt="Fresh Bowl Logo">
+    <h1>Fresh Bowl</h1>
+  </div>
+  <nav aria-label="Principal">
+    <ul>
+      <li><a href="#productos">Productos</a></li>
+      <li><a href="#top">Top Ensaladas</a></li>
+    </ul>
+  </nav>
+  <div class="nav-buttons">
+    <a href="B1_registro.html">Registro</a>
+    <a href="B4_Inicio_Sesion.html">Iniciar Sesión</a>
+    <div class="perfil" id="perfil-btn" aria-haspopup="true" aria-expanded="false">Perfil ▼
+      <div class="perfil-menu" id="perfil-menu">
+        <a href="B33_Ver_Perfil.html">Ver Perfil</a>
+      </div>
+    </div>
+    <div class="carrito" id="carrito" role="button" aria-controls="carrito-detalle" aria-expanded="false">🛒 $0</div>
+  </div>
+</header>
+
+<!-- Carrito desplegable (ahora fijo) -->
+<div id="carrito-detalle">
+  <h3>Carrito</h3>
+  <div id="lista-carrito"></div>
+  <p style="margin-top:10px; font-weight:bold;">Total: <span id="total-carrito">$0</span></p>
+  <button onclick="finalizarCompra()" 
+style="width:100%; margin-top:10px; padding:8px; background:#4CAF50; color:white; border:none; border-radius:8px; font-weight:bold;">
+  Finalizar Compra ✅
+</button>
+
+</div>
+
+<!-- BUSCADOR -->
+<section class="filtro">
+  <input type="text" id="busqueda" placeholder="Buscar ensalada..." autocomplete="off" aria-label="Buscar ensalada por nombre">
+</section>
+
+<!-- PROMOCIONES -->
+<section class="promociones">
+  <h2>🌿 Ensaladas en Promoción 🌿</h2>
+  <div class="promociones-contenedor">
+
+    <div class="promo-item">
+      <img src="https://i.pinimg.com/originals/cf/77/b7/cf77b76cb6c0fbce9cf7b08ead68ad19.jpg" alt="Ensalada Caprese">
+      <h3>Ensalada Caprese</h3>
+      <p>$9.500</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button onclick="addToCart('Ensalada_Caprese',9500)">Agregar al carrito</button>
+        <button class="btn-outline"
+          onclick="location.href='b15_seleccion_ingredientes.html?name='+encodeURIComponent('Ensalada Caprese')+'&price=9500'">
+          Personalizar
+        </button>
+      </div>
+    </div>
+
+    <div class="promo-item">
+      <img src="https://www.comedera.com/wp-content/uploads/2018/05/ensalada-griega.jpg" alt="Ensalada Griega">
+      <h3>Ensalada Griega</h3>
+      <p>$8.900</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button onclick="addToCart('Ensalada_Griega',8900)">Agregar al carrito</button>
+        <button class="btn-outline"
+          onclick="location.href='b15_seleccion_ingredientes.html?name='+encodeURIComponent('Ensalada Griega')+'&price=8900'">
+          Personalizar
+        </button>
+      </div>
+    </div>
+
+    <div class="promo-item">
+      <img src="https://estaticos-cdn.prensaiberica.es/clip/dfd92a7a-ad2b-4f89-8f55-653f87723baf_16-9-discover-aspect-ratio_default_0_x1653y1085.jpg" alt="Ensalada Niçoise">
+      <h3>Ensalada Niçoise</h3>
+      <p>$9.800</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button onclick="addToCart('Ensalada_Nicoise',9800)">Agregar al carrito</button>
+        <button class="btn-outline"
+          onclick="location.href='b15_seleccion_ingredientes.html?name='+encodeURIComponent('Ensalada Niçoise')+'&price=9800'">
+          Personalizar
+        </button>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- PRODUCTOS -->
+<section id="productos" class="productos">
+  <h2>🥗 Nuestras Ensaladas 🥗</h2>
+  <div class="productos-contenedor" id="lista-productos">
+
+    <div class="producto">
+      <img src="https://www.recetassinlactosa.com/wp-content/uploads/2020/07/ensalada_mediterranea.jpg" alt="Ensalada Mediterránea">
+      <div class="producto-info">
+        <h3>Ensalada Mediterránea</h3>
+        <p>$10.500</p>
+        <div class="acciones" style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button onclick="addToCart('Ensalada_Mediterranea',10500)">Agregar al carrito</button>
+          <button class="btn-outline"
+            onclick="location.href='b15_seleccion_ingredientes.html?name='+encodeURIComponent('Ensalada Mediterránea')+'&price=10500'">
+            Personalizar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="producto">
+      <img src="https://polvillo.es/wp-content/uploads/2021/05/receta-de-ensalada-cesar-con-barrita-campesina.jpg" alt="Ensalada César">
+      <div class="producto-info">
+        <h3>Ensalada César</h3>
+        <p>$12.000</p>
+        <div class="acciones" style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button onclick="addToCart('Ensalada_Cesar',12000)">Agregar al carrito</button>
+          <button class="btn-outline"
+            onclick="location.href='b15_seleccion_ingredientes.html?name='+encodeURIComponent('Ensalada César')+'&price=12000'">
+            Personalizar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="producto">
+      <img src="https://images-gmi-pmc.edge-generalmills.com/ba79a2ed-25c3-4e5b-b327-93a889eeebc4.jpg" alt="Ensalada Tropical">
+      <div class="producto-info">
+        <h3>Ensalada Tropical</h3>
+        <p>$14.800</p>
+        <div class="acciones" style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button onclick="addToCart('Ensalada_Tropical',14800)">Agregar al carrito</button>
+          <button class="btn-outline"
+            onclick="location.href='b15_seleccion_ingredientes.html?name='+encodeURIComponent('Ensalada Tropical')+'&price=14800'">
+            Personalizar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ensalada Brasileña agotada (sin personalizar) -->
+    <div class="producto" aria-disabled="true">
+      <img src="https://www.cardamomo.news/__export/1702497985313/sites/debate/img/2023/12/13/ensalada_brasilena_de_zanahoria_1.png_673822677.png"
+           alt="Ensalada Brasileña"
+           style="filter: grayscale(100%);">
+      <div class="producto-info">
+        <h3>Ensalada Brasileña</h3>
+        <p>$9.900</p>
+        <p style="color:red; font-weight:bold; font-size:1.1em;">Agotado</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- TOP ENSALADAS -->
+<section id="top" class="productos">
+  <h2>🏆 Top Ensaladas 🏆</h2>
+  <div class="productos-contenedor">
+
+    <div class="producto">
+      <img src="https://cdn.kiwilimon.com/recetaimagen/24986/27284.jpg" alt="Ensalada Waldorf">
+      <div class="producto-info">
+        <h3>Ensalada Waldorf</h3>
+        <p>$13.600</p>
+        <div class="acciones" style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button onclick="addToCart('Ensalada_Waldorf',13600)">Agregar al carrito</button>
+          <button class="btn-outline"
+            onclick="location.href='b15_seleccion_ingredientes.html?name='+encodeURIComponent('Ensalada Waldorf')+'&price=13600'">
+            Personalizar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="producto">
+      <img src="https://www.paulinacocina.net/wp-content/uploads/2023/08/Ensalada-campera-clasica.jpg" alt="Ensalada Mimosa">
+      <div class="producto-info">
+        <h3>Ensalada Mimosa</h3>
+        <p>$11.500</p>
+        <div class="acciones" style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button onclick="addToCart('Ensalada_Mimosa',11500)">Agregar al carrito</button>
+          <button class="btn-outline"
+            onclick="location.href='b15_seleccion_ingredientes.html?name='+encodeURIComponent('Ensalada Mimosa')+'&price=11500'">
+            Personalizar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="producto">
+      <img src="https://buenprovecho.hn/wp-content/uploads/2020/12/Ensalada_rusa.png" alt="Ensalada Rusa">
+      <div class="producto-info">
+        <h3>Ensalada Rusa</h3>
+        <p>$11.900</p>
+        <div class="acciones" style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button onclick="addToCart('Ensalada_Rusa',11900)">Agregar al carrito</button>
+          <button class="btn-outline"
+            onclick="location.href='b15_seleccion_ingredientes.html?name='+encodeURIComponent('Ensalada Rusa')+'&price=11900'">
+            Personalizar
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ====== FOOTER ====== -->
+<footer>
+  <p>© 2025 Fresh Bowl - Todos los derechos reservados</p>
+  <p>📞 +569 64419067 | 📍 Buin, Av. José Manuel Balmaceda 318 | ✉ aguantenlasverduras@gmail.com</p>
+</footer>
+
+<script>
+  // ----- Perfil dropdown -----
+  const perfilBtn = document.getElementById('perfil-btn');
+  const perfilMenu = document.getElementById('perfil-menu');
+  perfilBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const open = perfilMenu.style.display === 'block';
+    perfilMenu.style.display = open ? 'none' : 'block';
+    perfilBtn.setAttribute('aria-expanded', String(!open));
+  });
+
+  // ----- Carrito -----
+  const carritoHeader = document.getElementById('carrito');
+  const carritoDetalle = document.getElementById('carrito-detalle');
+
+  carritoHeader.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const open = carritoDetalle.style.display === 'block';
+    carritoDetalle.style.display = open ? 'none' : 'block';
+    carritoHeader.setAttribute('aria-expanded', String(!open));
+    renderCarrito();
+  });
+
+  function addToCart(productId, price) {
+    let cart = JSON.parse(localStorage.getItem('cart')) || {};
+    if(cart[productId]) cart[productId].qty += 1;
+    else cart[productId] = {price: price, qty:1};
+    localStorage.setItem('cart', JSON.stringify(cart));
+    renderCarrito();
+    updateCartHeader();
+  }
+
+  function removeItem(productId) {
+    let cart = JSON.parse(localStorage.getItem('cart')) || {};
+    delete cart[productId];
+    localStorage.setItem('cart', JSON.stringify(cart));
+    renderCarrito();
+    updateCartHeader();
+  }
+
+function updateCartHeader() {
+  const cart = JSON.parse(localStorage.getItem('cart')) || {};
+  let subtotal = 0, totalItems = 0;
+  for (const id in cart) {
+    subtotal += cart[id].price * cart[id].qty;
+    totalItems += cart[id].qty;
+  }
+
+  // sumar envío solo si fue elegido en B24
+  const envio = JSON.parse(localStorage.getItem('fb_envio') || 'null');
+  const shipping = envio ? Number(envio.costo || 0) : 0;
+
+  const total = subtotal + shipping;
+  carritoHeader.textContent = `🛒 $${total.toLocaleString('es-CL')}`;
+}
+
+
+  function renderCarrito() {
+    const cart = JSON.parse(localStorage.getItem('cart')) || {};
+    const lista = document.getElementById('lista-carrito');
+    lista.innerHTML = '';
+    let total = 0;
+    for(const id in cart){
+      const item = cart[id];
+      total += item.price * item.qty;
+      const div = document.createElement('div');
+      div.style.display='flex';
+      div.style.justifyContent='space-between';
+      div.style.alignItems='center';
+      div.style.marginBottom='8px';
+      div.innerHTML = `
+        <span>${id.replaceAll("_"," ")}</span>
+        <span>$${(item.price*item.qty).toLocaleString('es-CL')}</span>
+        <button onclick="removeItem('${id}')" style="background:#f44336;color:white;border:none;padding:2px 6px;border-radius:4px;cursor:pointer;">Eliminar</button>
+      `;
+      lista.appendChild(div);
+    }
+    document.getElementById('total-carrito').textContent = `$${total.toLocaleString('es-CL')}`;
+  }
+
+  // ----- Buscador por nombre -----
+  const inputBusq = document.getElementById('busqueda');
+  const contenedor = document.getElementById('lista-productos');
+  if (inputBusq && contenedor) {
+    inputBusq.addEventListener('input', () => {
+      const q = inputBusq.value.trim().toLowerCase();
+      contenedor.querySelectorAll('.producto').forEach(card => {
+        const name = (card.querySelector('h3')?.textContent || '').toLowerCase();
+        card.style.display = name.includes(q) ? '' : 'none';
+      });
+    });
+  }
+
+  // ----- Cerrar menús al hacer click fuera o con ESC -----
+  document.addEventListener('click', () => {
+    if (perfilMenu) perfilMenu.style.display='none';
+    if (carritoDetalle) carritoDetalle.style.display='none';
+    carritoHeader.setAttribute('aria-expanded', 'false');
+    perfilBtn.setAttribute('aria-expanded', 'false');
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      if (perfilMenu) perfilMenu.style.display='none';
+      if (carritoDetalle) carritoDetalle.style.display='none';
+      carritoHeader.setAttribute('aria-expanded', 'false');
+      perfilBtn.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  // Init
+  window.addEventListener('load', updateCartHeader);
+  function finalizarCompra() {
+  const cart = JSON.parse(localStorage.getItem('cart') || '{}');
+
+  if (Object.keys(cart).length === 0) {
+    alert("Tu carrito está vacío 🛒");
+    return;
+  }
+
+  // ¿Está logueado?
+  const user = JSON.parse(localStorage.getItem("usuarioFB") || "null");
+  if (!user) {
+    alert("Debes iniciar sesión para comprar");
+    location.href = "B4_Inicio_Sesion.html";
+    return;
+  }
+
+  // ¿Ya seleccionó entrega?
+  const envio = JSON.parse(localStorage.getItem("fb_envio") || "null");
+  if (!envio) {
+    alert("Selecciona tu método de entrega");
+    location.href = "B24_Seleccion_Entrega.html";
+    return;
+  }
+
+  // Todo OK → ir a pago simulado
+  location.href = "B21_Pago.html";
+}
+
+</script>
+
+<!-- Carga de la API y tu app (en ese orden) -->
+<script src="api.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
+
+

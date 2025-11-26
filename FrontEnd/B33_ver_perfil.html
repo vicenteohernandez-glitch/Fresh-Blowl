@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Mi Perfil - Fresh Bowl</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
+<style>
+body {
+  font-family: 'Poppins', sans-serif;
+  background: #f4fff5;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+.card {
+  background: #fff;
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.1);
+  width: 350px;
+  text-align: center;
+}
+.avatar {
+  width: 90px;
+  height: 90px;
+  background: #4CAF50;
+  color: white;
+  font-size: 38px;
+  border-radius: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: auto;
+}
+h3 { margin-top: 10px; color:#2e7d32; }
+.info { margin:10px 0; font-size:14px; color:#444; }
+button, a.btn {
+  width:100%;
+  margin-bottom:10px;
+  padding:10px;
+  border:none;
+  border-radius:8px;
+  font-weight:bold;
+  cursor:pointer;
+}
+.btn-edit { background:#4CAF50; color:white; }
+.btn-pass { background:#2e7d32; color:white; }
+.btn-pref { background:#1b5e20; color:white; }
+.btn-logout { background:#d32f2f; color:white; }
+a.volver {
+  display:block;
+  margin-top:12px;
+  color:#4CAF50;
+  font-weight:bold;
+  text-decoration:none;
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div id="avatar" class="avatar">U</div>
+  <h3 id="nombre">Usuario</h3>
+  <div class="info" id="email">correo@example.com</div>
+  <div class="info" id="telefono">+569...</div>
+
+  <button class="btn-edit" onclick="location.href='B34_Editar_Perfil.html'">Editar Perfil</button>
+  <button class="btn-pass" onclick="location.href='B35_Cambio_Contrasena.html'">Cambiar Contraseña</button>
+  <button class="btn-pref" onclick="location.href='B36_Preferencias.html'">Preferencias</button>
+  <button class="btn-logout" onclick="cerrarSesion()">Cerrar Sesión</button>
+
+  <a href="index.html" class="volver">⬅ Volver al inicio</a>
+</div>
+
+<script>
+function cargarPerfil(){
+  const u = JSON.parse(localStorage.getItem("usuarioFB") || "{}");
+
+  document.getElementById("nombre").textContent = u.nombre || "Usuario";
+  document.getElementById("email").textContent = u.email || "Sin email";
+  document.getElementById("telefono").textContent = u.telefono || "Sin teléfono";
+
+  const inicial = (u.nombre || "U").charAt(0).toUpperCase();
+  document.getElementById("avatar").textContent = inicial;
+}
+
+function cerrarSesion(){
+  localStorage.removeItem("usuarioFB");
+  alert("Sesión cerrada ✅");
+  location.href = "B4_Inicio_Sesion.html";
+}
+
+cargarPerfil();
+</script>
+
+</body>
+</html>

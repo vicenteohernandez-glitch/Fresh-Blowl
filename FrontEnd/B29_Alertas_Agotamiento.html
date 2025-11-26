@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>B29: Alertas de Agotamiento</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
+
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080') no-repeat center center fixed;
+    background-size: cover;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+
+  .container {
+    background-color: rgba(255,255,255,0.95);
+    padding: 30px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0px 4px 15px rgba(0,0,0,0.3);
+    width: 360px;
+  }
+
+  select, input {
+    width: 100%;
+    padding: 10px;
+    margin-top: 8px;
+    border-radius: 6px;
+  }
+
+  button {
+    background-color: #d35400;
+    color: white;
+    border: none;
+    padding: 10px;
+    width: 100%;
+    border-radius: 6px;
+    margin-top: 12px;
+    cursor: pointer;
+  }
+
+  button:hover { background-color: #e67e22; }
+
+  .alerta { color: #c0392b; font-weight: bold; margin-top: 10px; }
+  .ok { color: #27ae60; font-weight: bold; margin-top: 10px; }
+
+  .progress-bg {
+    width: 100%;
+    background: #ddd;
+    height: 10px;
+    border-radius: 5px;
+    margin-top: 8px;
+  }
+  .progress-fill {
+    height: 10px;
+    border-radius: 5px;
+    transition: width .5s;
+    background: #27ae60;
+  }
+
+  a { margin-top: 15px; display: inline-block; color: #d35400; }
+</style>
+</head>
+
+<body>
+<div class="container">
+  <h3>Alerta de Agotamiento</h3>
+
+  <select id="ingrediente">
+    <option value="" disabled selected>Seleccione ingrediente</option>
+    <option value="Lechuga 🥬">Lechuga 🥬</option>
+    <option value="Pollo 🍗">Pollo 🍗</option>
+    <option value="Tomate 🍅">Tomate 🍅</option>
+    <option value="Queso 🧀">Queso 🧀</option>
+  </select>
+
+  <input type="number" id="stock" placeholder="Stock actual (ej: 3)">
+  <input type="number" id="minimo" placeholder="Umbral mínimo (por defecto 5)" value="5">
+
+  <div class="progress-bg">
+    <div id="barra" class="progress-fill" style="width: 100%;"></div>
+  </div>
+
+  <button id="verificar">Verificar</button>
+  <p id="mensaje"></p>
+
+  <a href="index.html">Volver al inicio</a>
+</div>
+
+<script>
+document.getElementById("verificar").addEventListener("click", () => {
+  const ingrediente = document.getElementById("ingrediente").value;
+  const stock = parseInt(document.getElementById("stock").value);
+  const minimo = parseInt(document.getElementById("minimo").value) || 5;
+  const msg = document.getElementById("mensaje");
+  const barra = document.getElementById("barra");
+
+  if (!ingrediente) {
+    msg.textContent = "Seleccione un ingrediente.";
+    msg.className = "alerta";
+    return;
+  }
+  if (isNaN(stock)) {
+    msg.textContent = "Ingrese un valor numérico válido.";
+    msg.className = "alerta";
+    return;
+  }
+
+  const porcentaje = Math.min(100, (stock / minimo) * 100);
+  barra.style.width = porcentaje + "%";
+  barra.style.background = stock < minimo ? "#c0392b" : "#27ae60";
+
+  if (stock < minimo) {
+    msg.textContent = `⚠️ Bajo stock de ${ingrediente} (${stock} unidades) — Alerta generada.`;
+    msg.className = "alerta";
+  } else {
+    msg.textContent = `✅ ${ingrediente} en buen nivel (${stock} unidades).`;
+    msg.className = "ok";
+  }
+});
+</script>
+</body>
+</html>

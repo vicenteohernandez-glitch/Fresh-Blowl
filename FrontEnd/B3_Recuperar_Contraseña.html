@@ -1,0 +1,182 @@
+<!-- Archivo: B3_Recuperar_Contrasena.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>B-3 Recuperar Contraseña</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: url('https://www.panchovilla.cl/wp-content/uploads/2022/08/Ensalada-de-camaron-y-palta.jpg') no-repeat center center fixed;
+    background-size: cover;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+  .container {
+    background-color: rgba(255,255,255,0.95);
+    padding: 30px;
+    border-radius: 10px;
+    max-width: 420px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0px 4px 15px rgba(0,0,0,0.3);
+  }
+  input[type="text"], input[type="password"] {
+    width: 100%;
+    padding: 11px;
+    margin: 10px 0;
+    border-radius: 7px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+    font-size: 15px;
+  }
+  button {
+    background-color: #27ae60;
+    color: white;
+    padding: 11px 20px;
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+    width: 100%;
+    font-size: 16px;
+    margin-top: 5px;
+  }
+  button:hover { background-color: #2ecc71; }
+  .error { color: #d32f2f; font-size: 0.95em; margin-top: 5px; }
+  .success { color: #2e7d32; font-size: 0.95em; margin-top: 5px; }
+  a {
+    display: inline-block;
+    margin-top: 15px;
+    color: #27ae60;
+    text-decoration: none;
+    font-weight: bold;
+  }
+  a:hover { text-decoration: underline; }
+  .hidden { display: none; }
+  .hint { font-size: 12px; color:#666; margin-top: -4px; }
+</style>
+</head>
+<body>
+<div class="container" role="main" aria-labelledby="title">
+  <h3 id="title">Recuperar Contraseña</h3>
+  <p id="mensajeEnvio" class="success"></p>
+
+  <!-- Paso 1: ingresar código -->
+  <div id="codigoSection">
+    <input type="text" id="codigo" placeholder="Código de verificación" autocomplete="one-time-code" inputmode="numeric" aria-label="Código de verificación">
+    <button id="verificar">Verificar código</button>
+    <p id="mensajeCodigo" class="error" aria-live="polite"></p>
+    <p class="hint">Código de prueba: <strong>000</strong></p>
+  </div>
+
+  <!-- Paso 2: nueva contraseña -->
+  <div id="nuevaPassSection" class="hidden" aria-hidden="true">
+    <input type="password" id="nuevaPass" placeholder="Nueva contraseña" autocomplete="new-password" minlength="3">
+    <input type="password" id="repetirPass" placeholder="Reescribe la nueva contraseña" autocomplete="new-password" minlength="3">
+    <button id="cambiarPass">Cambiar contraseña</button>
+    <p id="mensajePass" class="error" aria-live="polite"></p>
+  </div>
+
+  <a href="index.html">Volver al inicio</a>
+</div>
+
+<script>
+  // --- Email enmascarado (si viene de B1 y lo guardaste como emailRegistro) ---
+  const email = localStorage.getItem('emailRegistro') || 'tu correo registrado';
+  const masked = (e => {
+    if (!e || !e.includes('@')) return e;
+    const [user, dom] = e.split('@');
+    if (user.length <= 2) return '*@' + dom;
+    return user[0] + '*'.repeat(Math.max(1, user.length - 2)) + user.slice(-1) + '@' + dom;
+  })(email);
+  document.getElementById('mensajeEnvio').textContent = `Se ha enviado un código de verificación a ${masked}`;
+
+  // --- Elementos ---
+  const codigoInput = document.getElementById('codigo');
+  const verificarBtn = document.getElementById('verificar');
+  const mensajeCodigo = document.getElementById('mensajeCodigo');
+
+  const codigoSection = document.getElementById('codigoSection');
+  const nuevaPassSection = document.getElementById('nuevaPassSection');
+  const nuevaPassInput = document.getElementById('nuevaPass');
+  const repetirPassInput = document.getElementById('repetirPass');
+  const cambiarPassBtn = document.getElementById('cambiarPass');
+  const mensajePass = document.getElementById('mensajePass');
+
+  // --- Helpers ---
+  function setMsg(el, text, ok=false){
+    el.textContent = text || '';
+    el.className = ok ? 'success' : (text ? 'error' : '');
+  }
+
+  // Bloquear espacios en los inputs
+  [codigoInput].forEach(i=>{
+    i.addEventListener('input', ()=> i.value = i.value.replace(/\s/g,''));
+  });
+  [nuevaPassInput, repetirPassInput].forEach(i=>{
+    i.addEventListener('input', ()=> i.value = i.value.replace(/\s/g,''));
+  });
+
+  // Enter para verificar código
+  codigoInput.addEventListener('keypress', (e)=>{
+    if(e.key === 'Enter'){ e.preventDefault(); verificarBtn.click(); }
+  });
+
+  // Enter para cambiar contraseña
+  [nuevaPassInput, repetirPassInput].forEach(el=>{
+    el.addEventListener('keypress', (e)=>{
+      if(e.key === 'Enter'){ e.preventDefault(); cambiarPassBtn.click(); }
+    });
+  });
+
+  // Paso 1: verificar código
+  verificarBtn.addEventListener('click', () => {
+    const codigo = codigoInput.value.trim();
+    if(codigo === "000") {
+      setMsg(mensajeCodigo, "");
+      codigoSection.classList.add('hidden');
+      nuevaPassSection.classList.remove('hidden');
+      nuevaPassSection.setAttribute('aria-hidden','false');
+      nuevaPassInput.focus();
+    } else {
+      setMsg(mensajeCodigo, "Código incorrecto");
+    }
+  });
+
+  // Paso 2: cambiar contraseña
+  cambiarPassBtn.addEventListener('click', () => {
+    const nueva = nuevaPassInput.value.trim();
+    const repetir = repetirPassInput.value.trim();
+
+    if(nueva === "" || repetir === "") {
+      return setMsg(mensajePass, "Completa ambos campos");
+    }
+    if(nueva.length < 3){
+      return setMsg(mensajePass, "La contraseña debe tener al menos 3 caracteres");
+    }
+    if(nueva !== repetir) {
+      return setMsg(mensajePass, "Las contraseñas no coinciden");
+    }
+
+    // Simulación de cambio correcto
+    setMsg(mensajePass, "Contraseña cambiada correctamente", true);
+
+    // Limpia temporalmente credenciales simuladas
+    setTimeout(() => {
+      // Opcional: podrías guardar una marca de "resetOk" si quieres usarla en B4
+      // localStorage.setItem('resetOk', '1');
+      window.location.href = "index.html";
+    }, 1500);
+  });
+
+  // Foco inicial
+  window.addEventListener('load', ()=> codigoInput.focus());
+</script>
+</body>
+</html>

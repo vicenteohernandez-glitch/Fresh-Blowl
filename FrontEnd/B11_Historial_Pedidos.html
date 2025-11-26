@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Historial de Pedidos - Fresh Bowl</title>
+<style>
+  body { font-family:'Poppins',sans-serif; background:#f9f9f9; margin:0; color:#333; }
+  header { background:#fff; padding:10px 40px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 8px rgba(0,0,0,0.1); position:sticky; top:0; }
+  .simulacion-box { background:white; padding:20px; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,0.1); width:400px; margin:50px auto; text-align:left; }
+  .simulacion-box h2 { margin:6px 0 14px; color:#388E3C; text-align:center; }
+  .simulacion-box button { width:100%; padding:10px; border:none; border-radius:6px; background:#4CAF50; color:white; font-weight:bold; cursor:pointer; margin-top:5px; }
+  .simulacion-box button:hover { background:#388E3C; }
+  .pedido { display:flex; flex-direction:column; gap:4px; margin-bottom:10px; padding:10px; border:1px solid #eee; border-radius:8px; background:#fff; }
+  .pedido .row { display:flex; justify-content:space-between; gap:10px; align-items:center; }
+  .id { font-weight:700; color:#444; }
+  .estado { font-size:.9em; padding:4px 8px; border-radius:999px; background:#eee; }
+  .estado.entregado, .estado.Pagado, .estado.Listo { background:#E6F4EA; color:#126B2E; }
+  .estado.Enviado { background:#DDEBFF; color:#1E5AA7; }
+  .estado.Preparación { background:#FFF4D8; color:#7A4D00; }
+  .muted { color:#666; font-size:.92em; }
+  .empty { text-align:center; color:#777; margin-top:10px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><h1>Fresh Bowl</h1></div>
+</header>
+
+<section class="simulaciones">
+  <div class="simulacion-box">
+    <h2>📦 Historial de Pedidos</h2>
+    <button onclick="mostrarTodos()">Ver todos los pedidos</button>
+    <button onclick="filtrarEntregado()">Filtrar entregados</button>
+    <div id="lista-pedidos" style="margin-top:12px;"></div>
+  </div>
+</section>
+
+<script>
+/* =========================
+   Fuente de datos:
+   - Si existe localStorage.orders (array de { id, dateISO, email, items:[{name,qty,price}], total, estado }),
+     lo usamos y lo “aplanamos” para esta vista.
+   - Si no existe, usamos tus 3 ejemplos bajo 'pedidosFallback'.
+   ========================= */
+const pedidosFallback = [
+  { id: 1, producto: "Ensalada César",   estado: "entregado" },
+  { id: 2, producto: "Ensalada Tropical", estado: "pendiente" },
+  { id: 3, producto: "Ensalada Rusa",     estado: "entregado" },
+];
+
+function getOrdersFromLocalStorage() {
+  try {
+    const raw = localStorage.getItem('orders');
+    if (!raw) return null;
+    const arr = JSON.parse(raw);
+    if (!Array.isArray(arr)) return null;
+
+    // Convertimos cada pedido a uno o varios "registros" legibles para tu estructura.
+    // Aquí mostramos UN registro por pedido (resumen de items).
+    return arr.map(o => {
+      const productos = (o.items || [])
+        .map(it => `${it.name || it.id || 'Producto'} x${it.qty || 1}`)
+        .join(', ');
+      return {
+        id: o.id || '-',
+        producto: productos || '—',
+        // Normalizamos estado a string simple
+        estado: (o.estado || '').toString()
+      };
+    });
+  } catch (e) {
+    return null;
+  }
+}
+
+function fuentePedidos() {
+  return getOrdersFromLocalStorage() || pedidosFallback;
+}
+
+/* =========================
+   Render
+   ========================= */
+const listaEl = document.getElementById('lista-pedidos');
+
+function render(lista) {
+  listaEl.innerHTML = '';
+  if (!lista || lista.length === 0) {
+    const p = document.createElement('p');
+    p.className = 'empty';
+    p.textContent = 'No hay pedidos';
+    listaEl.appendChild(p);
+    return;
+  }
+
+  lista.forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'pedido';
+
+    // Normalizamos estado visual (con mayúsculas iniciales si viene en minúsculas)
+    const est = (p.estado || '').toString();
+    const estNorm = (()=>{
+      const map = {
+        'entregado':'Entregado',
+        'pendiente':'Pendiente',
+        'pagado':'Pagado',
+        'preparación':'Preparación',
+        'preparacion':'Preparación',
+        'listo':'Listo',
+        'enviado':'Enviado'
+      };
+      const key = est.toLowerCase();
+      return map[key] || est;
+    })();
+
+    card.innerHTML = `
+      <div class="row">
+        <span class="id">ID: ${p.id}</span>
+        <span class="estado ${estNorm}">${estNorm}</span>
+      </div>
+      <div class="muted">${p.producto}</div>
+    `;
+    listaEl.appendChild(card);
+  });
+}
+
+function mostrarTodos() {
+  const data = fuentePedidos();
+  render(data);
+}
+function filtrarEntregado() {
+  const data = fuentePedidos().filter(p => {
+    const e = (p.estado || '').toString().toLowerCase();
+    return e === 'entregado';
+  });
+  render(data);
+}
+
+// Carga inicial (muestra todos)
+mostrarTodos();
+</script>
+
+</body>
+</html>

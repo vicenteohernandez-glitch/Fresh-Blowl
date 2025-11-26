@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>B18: Crear Pedido</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: url('https://images.unsplash.com/photo-1504674900247-0877df9cc836') no-repeat center center fixed;
+  background-size: cover;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+.container {
+  background-color: rgba(255,255,255,0.95);
+  padding: 30px;
+  border-radius: 12px;
+  max-width: 500px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0px 4px 15px rgba(0,0,0,0.3);
+}
+select, button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+}
+button {
+  background-color: #27ae60;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+button:hover { background-color: #2ecc71; }
+.success { color: green; margin-top: 10px; font-weight: bold; }
+.error { color: red; margin-top: 10px; font-weight: bold; }
+a { display:block; margin-top:15px; font-weight:bold; color:#27ae60; text-decoration:none; }
+a:hover{ text-decoration:underline; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h3>Crear Pedido</h3>
+
+  <select id="producto">
+    <option value="">Seleccionar ensalada</option>
+    <option value="Ensalada César">Ensalada César</option>
+    <option value="Ensalada Mixta">Ensalada Mixta</option>
+    <option value="Ensalada Vegana">Ensalada Vegana</option>
+  </select>
+
+  <button id="crearPedidoBtn">Confirmar Pedido</button>
+
+  <p id="mensaje"></p>
+
+  <a href="index.html">Volver al inicio</a>
+</div>
+
+<script>
+// --- Utilidades storage ---
+function getOrders(){ 
+  return JSON.parse(localStorage.getItem('orders') || "[]"); 
+}
+function setOrders(arr){ 
+  localStorage.setItem('orders', JSON.stringify(arr)); 
+}
+
+// --- Evento botón ---
+document.getElementById('crearPedidoBtn').addEventListener('click', () => {
+  const producto = document.getElementById('producto').value;
+  const msg = document.getElementById('mensaje');
+
+  if (!producto) {
+    msg.textContent = "Seleccione una ensalada válida ❌";
+    msg.className = "error";
+    return;
+  }
+
+  if (producto === "Ensalada Mixta") {
+    msg.textContent = "Ingredientes agotados, no se puede registrar ❌";
+    msg.className = "error";
+    return;
+  }
+
+  // Crear Pedido real
+  const id = "ORD-" + Math.floor(Math.random()*90000 + 10000);
+  const order = {
+    id,
+    dateISO: new Date().toISOString(),
+    email: "cliente3@example.com",
+    items: [
+      { id: producto, name: producto, qty: 1, price: 12900 }
+    ],
+    total: 12900 + 2500, // + envío
+    estado: "Pagado"
+  };
+
+  const lista = getOrders();
+  lista.push(order);
+  setOrders(lista);
+
+  msg.textContent = `Pedido registrado ✅ Nº ${id}`;
+  msg.className = "success";
+});
+</script>
+
+</body>
+</html>

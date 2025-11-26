@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>B26: Notificación al Cliente</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080') no-repeat center center fixed;
+    background-size: cover;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+
+  .container {
+    background-color: rgba(255,255,255,0.95);
+    padding: 30px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0px 4px 15px rgba(0,0,0,0.3);
+    width: 360px;
+  }
+
+  button {
+    background-color: #8e44ad;
+    color: white;
+    border: none;
+    padding: 12px;
+    width: 100%;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 15px;
+  }
+  button:hover { background-color: #9b59b6; }
+
+  .message {
+    margin-top: 15px;
+    font-weight: bold;
+    font-size: 16px;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+
+  .success { color: #27ae60; }
+  .error { color: #c0392b; }
+
+  .loading {
+    margin-top: 12px;
+    font-style: italic;
+    font-size: 14px;
+    color: #555;
+  }
+
+  a { color: #8e44ad; margin-top: 15px; display: inline-block; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h3>Notificar al Cliente</h3>
+  <button id="enviarNoti">Enviar notificación</button>
+  
+  <p id="cargando" class="loading" style="display:none;">Enviando notificación...</p>
+  <p id="mensaje" class="message"></p>
+
+  <a href="index.html">Volver al inicio</a>
+</div>
+
+<script>
+document.getElementById('enviarNoti').addEventListener('click', () => {
+  const cargando = document.getElementById('cargando');
+  const mensaje = document.getElementById('mensaje');
+
+  mensaje.style.opacity = 0;
+  mensaje.textContent = "";
+
+  cargando.style.display = "block";
+
+  setTimeout(() => {
+    cargando.style.display = "none";
+
+    const exito = Math.random() > 0.1; // 90% éxito
+    if (exito) {
+      mensaje.textContent = "✅ Notificación enviada por correo y push";
+      mensaje.className = "message success";
+    } else {
+      mensaje.textContent = "❌ Error al enviar notificación. Inténtalo nuevamente.";
+      mensaje.className = "message error";
+    }
+
+    mensaje.style.opacity = 1;
+  }, 1000);
+});
+</script>
+
+</body>
+</html>

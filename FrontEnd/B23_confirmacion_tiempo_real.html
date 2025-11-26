@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>B23: Confirmación en Tiempo Real</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: url('https://images.unsplash.com/photo-1611765083444-a1d1bbf8d92a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080') no-repeat center center fixed;
+    background-size: cover;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  .container {
+    background-color: rgba(255,255,255,0.95);
+    padding: 30px;
+    border-radius: 10px;
+    max-width: 420px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0px 4px 15px rgba(0,0,0,0.3);
+  }
+  button {
+    background-color: #27ae60;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    font-size: 16px;
+  }
+  button:hover { background-color: #2ecc71; }
+  .status { margin-top: 14px; font-size: 1em; font-weight: bold; }
+  .success { color: #2e7d32; }
+  .pending { color: #f39c12; }
+  .error   { color: #e53935; }
+  .links { margin-top:12px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap }
+  .links a { display:inline-block; padding:8px 12px; border-radius:8px; border:2px solid #27ae60; color:#27ae60; text-decoration:none; font-weight:700 }
+  .links a:hover { background:#27ae60; color:#fff }
+  a.back { display:inline-block; margin-top: 15px; color: #27ae60; text-decoration: none; font-weight: bold; }
+  a.back:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h3>Confirmación en Tiempo Real</h3>
+  <button id="confirmarPago">Realizar Pago</button>
+  <p id="estado" class="status"></p>
+  <div id="postPago" class="links" style="display:none"></div>
+  <a href="index.html" class="back">Volver al inicio</a>
+</div>
+
+<script>
+// ===== Utilidades comunes =====
+function getCart(){ return JSON.parse(localStorage.getItem('cart')||"{}"); }
+function clearCart(){ localStorage.removeItem('cart'); }
+function getOrders(){ return JSON.parse(localStorage.getItem('orders')||"[]"); }
+function setOrders(arr){ localStorage.setItem('orders', JSON.stringify(arr)); }
+function totalDesdeCarrito(){
+  const cart = getCart();
+  let subtotal = 0, items = 0;
+  Object.keys(cart).forEach(k=>{ subtotal += cart[k].price*cart[k].qty; items += cart[k].qty; });
+  const shipping = items>0 ? 2500 : 0;
+  return { subtotal, shipping, total: subtotal + shipping, items };
+}
+function crearPedidoDesdeCarrito(email="cliente3@example.com"){
+  const cart = getCart();
+  const keys = Object.keys(cart);
+  if(keys.length === 0) return null;
+  const items = keys.map(id => ({
+    id,
+    name: cart[id].name || id.replaceAll('_',' '),
+    qty: cart[id].qty,
+    price: cart[id].price
+  }));
+  const t = totalDesdeCarrito();
+  const order = {
+    id: "ORD-" + Math.floor(Math.random()*90000 + 10000),
+    dateISO: new Date().toISOString(),
+    email,
+    items,
+    total: t.total,
+    estado: "Pagado",
+    gatewayStatus: "confirmed"
+  };
+  const orders = getOrders(); orders.push(order); setOrders(orders);
+  clearCart();
+  return order;
+}
+function confirmarUltimoPedidoAbierto(){
+  const orders = getOrders().slice().sort((a,b)=> new Date(b.dateISO||0) - new Date(a.dateISO||0));
+  if(!orders.length) return null;
+  const idx = orders.findIndex(o => !['Enviado','Entregado'].includes((o.estado||'').toString()));
+  const i = idx === -1 ? 0 : idx;
+  orders[i].gatewayStatus = "confirmed";
+  if(!orders[i].estado) orders[i].estado = "Pagado";
+  setOrders(orders);
+  return orders[i];
+}
+
+// ===== UI progreso simulado (tipo “tiempo real”) =====
+const btn = document.getElementById('confirmarPago');
+const estado = document.getElementById('estado');
+const postPago = document.getElementById('postPago');
+
+function setPending(msg){
+  estado.textContent = msg;
+  estado.className = "status pending";
+  postPago.style.display = 'none';
+  postPago.innerHTML = '';
+}
+function setSuccess(msg, orderId){
+  estado.textContent = msg;
+  estado.className = "status success";
+  postPago.style.display = 'flex';
+  postPago.innerHTML = `
+    <a href="B22_Boleta.html">Ver boleta</a>
+    <a href="B25_Estado_Pedido.html">Ver estado</a>
+    <a href="B11_Historial.html">Historial</a>
+  `;
+}
+function setError(msg){
+  estado.textContent = msg;
+  estado.className = "status error";
+  postPago.style.display = 'none';
+  postPago.innerHTML = '';
+}
+
+btn.addEventListener('click', () => {
+  // Paso 1: iniciamos “stream” de estados
+  setPending("Conectando con la pasarela…");
+  let tick = 0;
+  const timer = setInterval(()=>{
+    tick++;
+    if(tick === 1){
+      setPending("Procesando pago…");
+    } else if(tick === 2){
+      setPending("Validando con el banco…");
+    } else if(tick === 3){
+      // Decisión simulada
+      const r = Math.random(); // < 0.6 aprueba, si no queda pendiente
+      if(r < 0.6){
+        clearInterval(timer);
+        // Confirmado: crear desde carrito o confirmar pedido abierto
+        const cartInfo = totalDesdeCarrito();
+        let order = null;
+        if(cartInfo.items > 0){
+          order = crearPedidoDesdeCarrito("cliente3@example.com");
+        } else {
+          order = confirmarUltimoPedidoAbierto();
+        }
+        if(order){
+          setSuccess(`Pago confirmado ✔️ — Pedido Nº ${order.id}`, order.id);
+        } else {
+          setSuccess("Pago confirmado ✔️", null);
+        }
+      } else {
+        setPending("Pago en proceso ⏳ (esperando confirmación del emisor)");
+      }
+    } else if(tick >= 8){
+      // Timeout “realista” de espera
+      clearInterval(timer);
+      setPending("Seguimos esperando confirmación… ⏳ Intenta nuevamente en unos segundos.");
+    }
+  }, 900);
+});
+</script>
+
+</body>
+</html>

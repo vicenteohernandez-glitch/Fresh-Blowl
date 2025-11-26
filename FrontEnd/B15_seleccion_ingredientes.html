@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>B15: Selección de Ingredientes (simple y correcto)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
+<link rel="stylesheet" href="assets/css/style.css">
+<style>
+  .wrap{max-width:760px;margin:30px auto;background:#fff;padding:22px;border-radius:12px;box-shadow:0 6px 22px rgba(0,0,0,.08)}
+  .sub{color:#2e7d32;margin:4px 0 12px}
+  fieldset{border:1px solid #eaeaea;border-radius:10px;padding:14px;margin:10px 0}
+  legend{padding:0 8px;color:#2e7d32}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .sum{background:#f6f8f9;border:1px solid #e3e8ec;border-radius:8px;padding:12px;margin-top:12px}
+  .pill{display:inline-block;padding:3px 8px;border-radius:999px;background:#eef5ee;color:#2e7d32;font-size:12px;margin-left:6px}
+  .muted{color:#666}
+  .imgbox{width:100%;height:220px;border-radius:12px;overflow:hidden;margin-bottom:10px}
+  .imgbox img{width:100%;height:100%;object-fit:cover}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="imgbox"><img id="foto" src="assets/img/ensalada1.png" alt="Ensalada"></div>
+  <h3 id="titulo" style="margin-bottom:4px">Arma tu Bowl</h3>
+  <div class="sub" id="subtitulo">Quita lo que no quieras y agrega extras. El total solo suma los extras.</div>
+
+  <!-- Base: solo muestra para quitar (NO cambian el precio base) -->
+  <fieldset>
+    <legend>Ingredientes base (puedes quitar | no modifican el precio)</legend>
+    <div id="baseList" class="grid2"></div>
+  </fieldset>
+
+  <!-- Extras: los que SÍ suman al total -->
+  <fieldset>
+    <legend>Extras (agregar | suman al total)</legend>
+    <div id="extraList" class="grid2"></div>
+  </fieldset>
+
+  <div class="sum">
+    <div>Precio base: <b id="precioBase">$0</b> <span id="badgeBase" class="pill">fijo</span></div>
+    <div>Extras seleccionados: <b id="precioExtras">$0</b></div>
+    <div style="margin-top:6px;font-size:1.2rem">Total: <b id="precioTotal">$0</b></div>
+  </div>
+
+  <div class="buttons" style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
+    <button class="btn btn-primary" id="agregar">Agregar al carrito</button>
+    <a class="btn btn-outline" href="index.html">Volver</a>
+  </div>
+
+  <div id="ok" class="success" style="display:none;margin-top:8px">Agregado ✅</div>
+</div>
+
+<script src="assets/js/app.js"></script>
+<script>
+/* ======================= CONFIG SIMPLE Y SEGURA ======================= */
+// Precios por extra (solo estos suman)
+const PRECIOS_EXTRAS = {
+  'Palta': 700, 'Queso': 500, 'Parmesano': 600, 'Mozzarella': 600,
+  'Tomate': 200, 'Tomate cherry': 300, 'Pepino': 200, 'Pimentón': 250,
+  'Cebolla morada': 150, 'Aceitunas': 200, 'Aceitunas negras': 200,
+  'Nueces': 600, 'Crutones': 300, 'Huevo extra': 300, 'Mango': 500, 'Piña': 500,
+  'Quinoa': 800, 'Arroz integral': 500, 'Garbanzos': 400, 'Tofu': 900, 'Atún extra': 1000, 'Pollo extra': 1200
+};
+
+// Recetas base simples (NO suman precio)
+const RECETAS = {
+  'Ensalada Caprese': ['Tomate','Mozzarella','Albahaca','Rúcula','Aceite de oliva'],
+  'Ensalada Griega': ['Lechuga','Pepino','Tomate','Queso Feta','Aceitunas negras','Cebolla morada','Orégano'],
+  'Ensalada Niçoise': ['Lechuga','Atún','Huevo','Aceitunas negras','Porotos verdes','Papa','Tomate'],
+  'Ensalada Mediterránea': ['Lechuga','Tomate','Pepino','Aceitunas','Cebolla morada','Aceite de oliva'],
+  'Ensalada César': ['Lechuga romana','Pollo','Parmesano','Crutones','Huevo','Salsa César'],
+  'Ensalada Tropical': ['Mix verdes','Pollo','Mango','Pimentón','Palta'],
+  'Ensalada Waldorf': ['Manzana','Apio','Nueces','Lechuga','Yogur'],
+  'Ensalada Mimosa': ['Papa','Zanahoria','Atún','Huevo','Mayonesa'],
+  'Ensalada Rusa': ['Papa','Zanahoria','Arvejas','Huevo','Mayonesa']
+};
+
+/* ======================= HELPERS ======================= */
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const CLP = v => new Intl.NumberFormat('es-CL',{style:'currency',currency:'CLP',maximumFractionDigits:0}).format(v||0);
+
+// Leer query (?sku o ?name & ?price)
+const params   = new URLSearchParams(location.search);
+const qsSku    = params.get('sku');
+const qsName   = params.get('name');
+const qsPrice  = params.get('price');
+
+// Obtener datos base (preferimos el catálogo si llega sku)
+let baseProducto = null;
+if (typeof FB !== 'undefined' && FB.PRODUCTOS) {
+  baseProducto = FB.PRODUCTOS.find(p => p.sku === qsSku) || null;
+}
+const baseNombre = baseProducto?.nombre || qsName || 'Bowl personalizado';
+const baseImg    = baseProducto?.img    || 'assets/img/ensalada1.png';
+const basePrecio = baseProducto?.precio || (qsPrice ? Number(qsPrice) : 9900);
+
+// Pintar cabecera
+$('#titulo').textContent = baseNombre.includes('Bowl') ? 'Arma tu Bowl' : `Personalizar: ${baseNombre}`;
+$('#foto').src = baseImg;
+$('#precioBase').textContent = CLP(basePrecio);
+
+// Ingredientes base (NO alteran precio)
+const recetaBase = RECETAS[baseNombre] || []; // si no está, queda vacío
+const baseList = $('#baseList');
+(recetaBase.length ? recetaBase : ['Lechuga','Tomate']).forEach(ing => {
+  const id = 'b_' + ing.replace(/\s+/g,'_');
+  const div = document.createElement('div');
+  div.innerHTML = `<label><input type="checkbox" id="${id}" data-ingrediente="${ing}" checked> ${ing} <span class="muted">(no suma)</span></label>`;
+  baseList.appendChild(div);
+});
+
+// Extras (SÍ suman precio)
+const extraList = $('#extraList');
+Object.entries(PRECIOS_EXTRAS).forEach(([ing, precio])=>{
+  // Evita mostrar un extra idéntico a base (para que no confunda)
+  if (recetaBase.includes(ing)) return;
+  const id = 'e_' + ing.replace(/\s+/g,'_');
+  const div = document.createElement('div');
+  div.innerHTML = `<label><input type="checkbox" id="${id}" data-ingrediente="${ing}" data-precio="${precio}"> ${ing} <b class="muted">(+${CLP(precio)})</b></label>`;
+  extraList.appendChild(div);
+});
+
+// Cálculo del total: SOLO suma extras seleccionados
+function calc(){
+  const extrasSel = $$('input[id^="e_"]:checked');
+  let extrasTotal = 0;
+  extrasSel.forEach(el => extrasTotal += Number(el.dataset.precio || 0));
+  $('#precioExtras').textContent = CLP(extrasTotal);
+  $('#precioTotal').textContent  = CLP(basePrecio + extrasTotal);
+  return { extrasTotal, total: basePrecio + extrasTotal };
+}
+$$('input[type="checkbox"]').forEach(el => el.addEventListener('change', calc));
+calc();
+
+// Agregar al carrito SIN recargos
+$('#agregar').addEventListener('click', () => {
+  const baseSel   = $$('input[id^="b_"]:checked').map(x => x.dataset.ingrediente);
+  const extrasSel = $$('input[id^="e_"]:checked').map(x => x.dataset.ingrediente);
+  const { total } = calc();
+
+  const nombreFinal = (RECETAS[baseNombre] ? `Personalizada ${baseNombre}` : 'Bowl personalizado')
+                    + (baseSel.length || extrasSel.length ? ` (${[...baseSel, ...extrasSel].join(', ')})` : '');
+
+  const sku = (qsSku ? (qsSku + '-CUST-') : 'CUSTOM_') + Date.now();
+
+  // aseguramos catálogo y carrito del app.js
+  if (typeof FB !== 'undefined') {
+    FB.PRODUCTOS.push({ sku, nombre: nombreFinal, precio: total, img: baseImg, desc: 'Bowl personalizado' });
+  }
+  if (typeof CART !== 'undefined') {
+    CART.add(sku, 1); // agrega 1 unidad con el precio FINAL que acabamos de calcular
+  }
+
+  const ok = $('#ok');
+  ok.style.display = 'block';
+  setTimeout(() => ok.style.display = 'none', 1200);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>B19: Modificar Pedido</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: url('https://images.unsplash.com/photo-1603046891445-122b98fbe106') no-repeat center center fixed;
+  background-size: cover;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+.container {
+  background-color: rgba(255,255,255,0.95);
+  padding: 30px;
+  border-radius: 12px;
+  max-width: 500px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0px 4px 15px rgba(0,0,0,0.3);
+}
+select, button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+}
+button {
+  background-color: #27ae60;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+button:hover { background-color: #2ecc71; }
+.success { color: green; margin-top: 10px; font-weight: bold; }
+.error { color: red; margin-top: 10px; font-weight: bold; }
+a { display:block; margin-top:15px; font-weight:bold; color:#27ae60; text-decoration:none; }
+a:hover{ text-decoration:underline; }
+.small { font-size: 12px; color:#666; margin-top:4px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h3>Modificar Pedido</h3>
+
+  <!-- Selección de pedido a modificar -->
+  <select id="pedidoId">
+    <option value="">Seleccionar pedido (ID)</option>
+    <!-- Se completa con localStorage.orders -->
+  </select>
+  <div id="hint" class="small"></div>
+
+  <!-- Nueva ensalada -->
+  <select id="nuevoProducto">
+    <option value="">Seleccionar nueva ensalada</option>
+    <option value="cesar">César</option>
+    <option value="mixta">Mixta</option>
+    <option value="vegana">Vegana</option>
+  </select>
+
+  <button id="modificarBtn">Guardar Cambios</button>
+  <p id="mensaje"></p>
+
+  <a href="index.html">Volver al inicio</a>
+</div>
+
+<script>
+// -------- Utilidades --------
+function getOrders(){ try { return JSON.parse(localStorage.getItem('orders')||'[]'); } catch { return []; } }
+function setOrders(arr){ localStorage.setItem('orders', JSON.stringify(arr)); }
+function fmtCLP(n){ return '$' + Number(n||0).toLocaleString('es-CL'); }
+
+// Mapeo simple de productos para la modificación
+const PRODUCT_MAP = {
+  cesar:  { name: 'Ensalada César',  price: 12000 },
+  mixta:  { name: 'Ensalada Mixta',  price: 12900 }, // pero no permitiremos por “agotado”
+  vegana: { name: 'Ensalada Vegana', price: 13500 }
+};
+
+// Estados que permitimos modificar (evita editar pedidos ya enviados/entregados)
+const EDITABLE_STATES = new Set(['Pagado','Preparación','Preparacion','Listo']);
+
+// -------- Cargar lista de pedidos --------
+const pedidoSelect = document.getElementById('pedidoId');
+const mensaje = document.getElementById('mensaje');
+const hint = document.getElementById('hint');
+
+function loadPedidos(){
+  const orders = getOrders()
+    .slice()
+    .sort((a,b)=> new Date(b.dateISO||0) - new Date(a.dateISO||0));
+
+  pedidoSelect.innerHTML = '<option value="">Seleccionar pedido (ID)</option>';
+
+  if(!orders.length){
+    hint.textContent = 'No hay pedidos en el sistema. Crea uno desde B18.';
+    return;
+  }
+
+  let noEditableCount = 0;
+  orders.forEach(o=>{
+    const opt = document.createElement('option');
+    const estado = (o.estado||'').toString();
+    const editable = EDITABLE_STATES.has(estado);
+    opt.value = o.id;
+    opt.textContent = `${o.id} — ${estado} — ${fmtCLP(o.total)} — ${new Date(o.dateISO||Date.now()).toLocaleDateString('es-CL')}`;
+    if(!editable){
+      opt.disabled = true;
+      noEditableCount++;
+      opt.textContent += ' (no editable)';
+    }
+    pedidoSelect.appendChild(opt);
+  });
+
+  if(noEditableCount && noEditableCount === orders.length){
+    hint.textContent = 'Todos los pedidos están en estado no editable.';
+  } else {
+    hint.textContent = 'Solo se pueden modificar pedidos en estado: Pagado / Preparación / Listo.';
+  }
+}
+
+loadPedidos();
+
+// -------- Acción: Modificar --------
+document.getElementById('modificarBtn').addEventListener('click', () => {
+  const orderId = pedidoSelect.value;
+  const prodKey = document.getElementById('nuevoProducto').value;
+
+  if(!orderId){
+    mensaje.textContent = 'Seleccione un pedido válido ❌';
+    mensaje.className = 'error';
+    return;
+  }
+  if(!prodKey){
+    mensaje.textContent = 'Seleccione una ensalada para modificar ❌';
+    mensaje.className = 'error';
+    return;
+  }
+  if(prodKey === 'mixta'){
+    mensaje.textContent = 'Ingredientes de “Mixta” agotados, no se puede actualizar ❌';
+    mensaje.className = 'error';
+    return;
+  }
+
+  const prod = PRODUCT_MAP[prodKey];
+  if(!prod){
+    mensaje.textContent = 'Producto inválido ❌';
+    mensaje.className = 'error';
+    return;
+  }
+
+  const orders = getOrders();
+  const idx = orders.findIndex(o=> String(o.id) === String(orderId));
+  if(idx === -1){
+    mensaje.textContent = 'Pedido no encontrado ❌';
+    mensaje.className = 'error';
+    return;
+  }
+
+  const estado = (orders[idx].estado||'').toString();
+  if(!EDITABLE_STATES.has(estado)){
+    mensaje.textContent = `El pedido no es editable en estado: ${estado} ❌`;
+    mensaje.className = 'error';
+    return;
+  }
+
+  // Modificamos el primer item (o creamos si no existiera)
+  const items = Array.isArray(orders[idx].items) ? orders[idx].items : [];
+  if(items.length){
+    items[0] = {
+      id:   prodKey,
+      name: prod.name,
+      qty:  1,
+      price: prod.price
+    };
+  } else {
+    items.push({ id: prodKey, name: prod.name, qty: 1, price: prod.price });
+  }
+  orders[idx].items = items;
+
+  // Recalcular totales (subtotal + envío)
+  const subtotal = items.reduce((s,it)=> s + (Number(it.price)||0) * (Number(it.qty)||0), 0);
+  const shipping = 2500;
+  orders[idx].total = subtotal + shipping;
+
+  // Guardar
+  setOrders(orders);
+
+  mensaje.textContent = `Pedido ${orderId} actualizado correctamente ✔️ Total: ${fmtCLP(orders[idx].total)}`;
+  mensaje.className = 'success';
+
+  // Refrescar opciones y mantener selección si sigue siendo válida
+  loadPedidos();
+  pedidoSelect.value = orderId;
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,210 @@
+<!-- Archivo: B4_Inicio_Seguro.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>B-4 Inicio Seguro</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: url('https://www.panchovilla.cl/wp-content/uploads/2022/08/Ensalada-de-camaron-y-palta.jpg') no-repeat center center fixed;
+    background-size: cover;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+  .container {
+    background-color: rgba(255,255,255,0.9);
+    padding: 30px;
+    border-radius: 10px;
+    max-width: 420px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0px 4px 15px rgba(0,0,0,0.3);
+  }
+  input[type="text"], input[type="password"], input[type="email"] {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 7px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+    font-size: 15px;
+  }
+  .input-row{ position: relative; }
+  .toggle-pass{
+    position:absolute; right:10px; top:50%; transform:translateY(-50%);
+    background:none; border:none; cursor:pointer; font-size:12px; color:#555;
+  }
+  button {
+    background-color: #27ae60;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+    width: 100%;
+    font-size: 16px;
+    margin-top: 5px;
+  }
+  button:hover { background-color: #2ecc71; }
+  .error {
+    color: #d32f2f;
+    font-size: 0.95em;
+    margin-top: 5px;
+  }
+  .success {
+    color: #2e7d32;
+    font-size: 0.95em;
+    margin-top: 5px;
+  }
+  a, .recuperar {
+    display: inline-block;
+    margin-top: 15px;
+    color: #27ae60;
+    text-decoration: none;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  a:hover, .recuperar:hover { text-decoration: underline; }
+  .links { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; }
+</style>
+</head>
+<body>
+<div class="container" role="main" aria-labelledby="title">
+  <h3 id="title">Inicio Seguro</h3>
+
+  <input type="email" id="email" placeholder="Email" autocomplete="email">
+  <div class="input-row">
+    <input type="password" id="pass" placeholder="Contraseña" autocomplete="current-password">
+    <button id="togglePass" class="toggle-pass" type="button" aria-label="Mostrar u ocultar contraseña">Mostrar</button>
+  </div>
+  <button id="ingresar">Ingresar</button>
+
+  <p id="mensaje" aria-live="polite"></p>
+
+  <div class="links">
+    <a href="index.html">Volver al inicio</a>
+    <span class="recuperar" id="recuperar">Recuperar contraseña</span>
+  </div>
+</div>
+
+<script>
+  const emailInput   = document.getElementById('email');
+  const passInput    = document.getElementById('pass');
+  const ingresarBtn  = document.getElementById('ingresar');
+  const mensaje      = document.getElementById('mensaje');
+  const recuperarBtn = document.getElementById('recuperar');
+  const togglePass   = document.getElementById('togglePass');
+
+  function setMsg(text, ok=false){
+    mensaje.textContent = text || '';
+    mensaje.className = ok ? 'success' : (text ? 'error' : '');
+  }
+
+  function isEmailValid(e){
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+  }
+
+  // Mostrar/ocultar contraseña
+  togglePass.addEventListener('click', ()=>{
+    const showing = passInput.type === 'text';
+    passInput.type = showing ? 'password' : 'text';
+    togglePass.textContent = showing ? 'Mostrar' : 'Ocultar';
+    passInput.focus();
+  });
+
+  // Enter para ingresar
+  [emailInput, passInput].forEach(el=>{
+    el.addEventListener('keypress', (e)=>{
+      if(e.key === 'Enter'){ e.preventDefault(); ingresarBtn.click(); }
+    });
+  });
+
+  // Botón ingresar
+  ingresarBtn.addEventListener('click', () => {
+    const email = emailInput.value.trim();
+    const pass  = passInput.value.trim();
+
+    if(email === "" || pass === ""){
+      return setMsg("Completa email y contraseña");
+    }
+    if(!isEmailValid(email)){
+      return setMsg("Formato de email inválido");
+    }
+
+    // ADMIN
+    if(email === "admin@example.com" && pass === "admin"){
+      setMsg("Has iniciado sesión como ADMIN", true);
+      // Persistimos referencia simple de sesión (simulada)
+      localStorage.setItem('emailRegistro', email);
+      setTimeout(() => {
+        window.location.href = "index.html"; // o "admin_panel.html"
+      }, 1200);
+      return;
+    }
+
+    // CLIENTE REGISTRADO
+    if(email === "cliente3@example.com" && pass === "444"){
+      setMsg("Has iniciado sesión", true);
+      localStorage.setItem('emailRegistro', email);
+      setTimeout(() => {
+        window.location.href = "index.html";
+      }, 1200);
+      return;
+    }
+
+    // Otros casos
+    setMsg("Email o contraseña incorrecta");
+  });
+
+  // Ir a recuperar contraseña
+  recuperarBtn.addEventListener('click', () => {
+    // Importante: usar nombre de archivo sin 'ñ' para evitar problemas de rutas
+    window.location.href = "B3_Recuperar_Contrasena.html";
+  });
+
+  // Foco inicial y prellenado si tenías email guardado
+  window.addEventListener('load', ()=>{
+    const saved = localStorage.getItem('emailRegistro');
+    if(saved){ emailInput.value = saved; }
+    (emailInput.value ? passInput : emailInput).focus();
+  });
+</script>
+</body>
+</html>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('form-login') 
+            || document.querySelector('form#login') 
+            || document.querySelector('form');
+
+  const emailEl = document.getElementById('email') || document.querySelector('[name=email]');
+  const passEl  = document.getElementById('password') || document.querySelector('[name=password]');
+
+  if (!form) return;
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    const email = (emailEl?.value || '').trim();
+    if (!email) { alert('Ingresa tu correo'); return; }
+
+    // Recupera si ya hay datos guardados de registro
+    const u = JSON.parse(localStorage.getItem('usuarioFB') || '{}');
+    if (!u.nombre) {
+      u.nombre = (email.split('@')[0] || 'Usuario'); // nombre a partir del correo
+    }
+    u.email = email;
+
+    localStorage.setItem('usuarioFB', JSON.stringify(u));
+    alert('Inicio de sesión correcto ✅');
+    location.href = 'B33_Ver_Perfil.html';
+  });
+});
+</script>

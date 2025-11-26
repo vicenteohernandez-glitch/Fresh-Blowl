@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>B25: Seguimiento de Pedido</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
+
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: url('https://images.unsplash.com/photo-1615485296316-5c2b8b88b8c4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080') no-repeat center center fixed;
+    background-size: cover;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+
+  .container {
+    background-color: rgba(255,255,255,0.96);
+    padding: 30px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0px 4px 15px rgba(0,0,0,0.3);
+    width: 360px;
+  }
+
+  button {
+    background-color: #16a085;
+    color: white;
+    border: none;
+    padding: 10px;
+    width: 100%;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 15px;
+  }
+  button:hover { background-color: #1abc9c; }
+
+  .estado {
+    margin-top: 15px;
+    font-weight: bold;
+    font-size: 18px;
+  }
+
+  a { color: #16a085; text-decoration: none; margin-top: 15px; display: inline-block; }
+  a:hover { text-decoration: underline; }
+
+  .progress-container {
+    width: 100%;
+    background: #e0e0e0;
+    border-radius: 6px;
+    margin-top: 15px;
+  }
+
+  .progress-bar {
+    height: 12px;
+    width: 0%;
+    background: #16a085;
+    border-radius: 6px;
+    transition: width 0.7s ease-in-out;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h3>Seguimiento de Pedido</h3>
+  <div class="progress-container"><div id="progress" class="progress-bar"></div></div>
+  <p id="estado" class="estado">Estado actual: Preparando... 🍳</p>
+  <button id="actualizar">Actualizar Estado</button>
+  <a href="index.html">Volver al inicio</a>
+</div>
+
+<script>
+const estado = document.getElementById('estado');
+const progress = document.getElementById('progress');
+
+const estados = [
+  { texto: "En preparación 🍳", progreso: 30 },
+  { texto: "Listo para envío 📦", progreso: 60 },
+  { texto: "En camino 🚚", progreso: 85 },
+  { texto: "Entregado ✅", progreso: 100 }
+];
+
+let index = 0;
+
+document.getElementById('actualizar').addEventListener('click', () => {
+  index = (index + 1) % estados.length;
+  estado.textContent = `Estado actual: ${estados[index].texto}`;
+  progress.style.width = estados[index].progreso + "%";
+});
+</script>
+
+</body>
+</html>
+B

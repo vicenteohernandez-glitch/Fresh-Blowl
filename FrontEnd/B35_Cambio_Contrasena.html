@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>B35: Cambio de Contraseña</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
+
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: url('https://cdn7.kiwilimon.com/brightcove/7802/7802.jpg') no-repeat center center fixed;
+    background-size: cover;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+
+  .container {
+    background-color: rgba(255,255,255,0.95);
+    padding: 30px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+    box-shadow: 0px 4px 15px rgba(0,0,0,0.3);
+  }
+
+  input, button {
+    width: 100%;
+    margin: 8px 0;
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+  }
+
+  button {
+    background-color: #27ae60;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+  }
+
+  button:hover { background-color: #2ecc71; }
+
+  .error { color: #c0392b; font-weight:bold; }
+  .success { color: #27ae60; font-weight:bold; }
+</style>
+</head>
+
+<body>
+<div class="container">
+  <h3>Cambiar Contraseña</h3>
+
+  <input type="password" id="actual" placeholder="Contraseña actual">
+  <input type="password" id="nueva" placeholder="Nueva contraseña">
+  <input type="password" id="confirmar" placeholder="Confirmar nueva contraseña">
+
+  <button id="cambiar">Actualizar contraseña</button>
+  <p id="mensaje"></p>
+
+  <a href="index.html">Volver al inicio</a>
+</div>
+
+<script>
+// Simulación password guardado (default si no existe)
+if (!localStorage.getItem("fb_pass")) {
+  localStorage.setItem("fb_pass", JSON.stringify("123456")); // contraseña inicial demo
+}
+
+document.getElementById("cambiar").addEventListener("click", () => {
+  const actual = document.getElementById("actual").value;
+  const nueva = document.getElementById("nueva").value;
+  const confirmar = document.getElementById("confirmar").value;
+  const msg = document.getElementById("mensaje");
+
+  const passGuardada = JSON.parse(localStorage.getItem("fb_pass"));
+
+  if (!actual || !nueva || !confirmar) {
+    msg.textContent = "Completa todos los campos.";
+    msg.className = "error";
+    return;
+  }
+
+  if (actual !== passGuardada) {
+    msg.textContent = "❌ La contraseña actual es incorrecta.";
+    msg.className = "error";
+    return;
+  }
+
+  if (nueva.length < 6) {
+    msg.textContent = "⚠️ La nueva contraseña es muy corta (mínimo 6 caracteres).";
+    msg.className = "error";
+    return;
+  }
+
+  if (nueva !== confirmar) {
+    msg.textContent = "⚠️ Las contraseñas no coinciden.";
+    msg.className = "error";
+    return;
+  }
+
+  // Guardar nueva contraseña
+  localStorage.setItem("fb_pass", JSON.stringify(nueva));
+
+  msg.textContent = "✅ Contraseña actualizada exitosamente.";
+  msg.className = "success";
+
+  // Reset campos
+  document.getElementById("actual").value = "";
+  document.getElementById("nueva").value = "";
+  document.getElementById("confirmar").value = "";
+});
+</script>
+</body>
+</html>

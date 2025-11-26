@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>B37: Eliminar Cuenta</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
+
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: url('https://cdn0.recetasgratis.net/es/posts/7/9/7/ensalada_de_pollo_y_manzana_75797_600_square.jpg') no-repeat center center fixed;
+    background-size: cover;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+
+  .container {
+    background-color: rgba(255,255,255,0.94);
+    padding: 30px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+    box-shadow: 0px 4px 15px rgba(0,0,0,0.3);
+  }
+
+  button {
+    margin: 10px 0;
+    padding: 12px;
+    width: 100%;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+  }
+
+  .danger { background-color: #e74c3c; color: #fff; }
+  .danger:hover { background-color: #c0392b; }
+
+  .cancel { background-color: #27ae60; color: #fff; }
+  .cancel:hover { background-color: #2ecc71; }
+
+  .info { color: #2980b9; font-weight: bold; }
+  .success { color: #27ae60; font-weight: bold; }
+  .warning { color: #c0392b; font-weight: bold; }
+</style>
+</head>
+
+<body>
+<div class="container">
+  <h3>Eliminar Cuenta</h3>
+  <p>⚠️ Esta acción es permanente y eliminará tus datos.</p>
+
+  <button class="danger" id="btnEliminar">Eliminar cuenta</button>
+  <button class="cancel" id="btnCancelar">Cancelar</button>
+
+  <p id="mensaje"></p>
+
+  <a href="index.html">Volver al inicio</a>
+</div>
+
+<script>
+let confirmacion = false;
+
+document.getElementById("btnEliminar").addEventListener("click", () => {
+  const msg = document.getElementById("mensaje");
+
+  if (!confirmacion) {
+    msg.textContent = "¿Seguro? Presiona nuevamente para confirmar.";
+    msg.className = "warning";
+    confirmacion = true;
+
+    // Evita doble clic accidental rápido
+    setTimeout(() => confirmacion = false, 3000);
+    return;
+  }
+
+  // Eliminar datos del usuario simulados
+  localStorage.removeItem("fb_user");
+  localStorage.removeItem("fb_pass");
+  localStorage.removeItem("fb_prefs");
+  localStorage.removeItem("fb_cart");
+
+  msg.textContent = "✅ Tu cuenta ha sido eliminada.";
+  msg.className = "success";
+
+  // Simular redirección tras cerrar sesión
+  setTimeout(() => {
+    window.location.href = "index.html";
+  }, 1500);
+});
+
+document.getElementById("btnCancelar").addEventListener("click", () => {
+  const msg = document.getElementById("mensaje");
+  msg.textContent = "Eliminación cancelada. Tu cuenta sigue activa ✅";
+  msg.className = "info";
+});
+</script>
+
+</body>
+</html>

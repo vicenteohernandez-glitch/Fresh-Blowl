@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Seleccionar Entrega - Fresh Bowl</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
+
+<style>
+body {
+  font-family: "Poppins", sans-serif;
+  background: #f4fff5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
+.card {
+  background: #fff;
+  padding: 25px;
+  width: 350px;
+  border-radius: 15px;
+  box-shadow: 0 5px 18px rgba(0,0,0,0.1);
+  text-align: center;
+}
+h3 { color:#2e7d32; }
+.opcion {
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 15px;
+  margin: 12px 0;
+  cursor: pointer;
+  transition: .25s;
+}
+.opcion:hover { border-color:#4caf50; }
+.opcion.seleccionado { border-color:#2e7d32; background:#e9f8eb; }
+button {
+  width:100%;
+  padding:12px;
+  border-radius:8px;
+  background:#4caf50;
+  border:none;
+  color:#fff;
+  font-weight:bold;
+  cursor:pointer;
+}
+button:hover { background:#388e3c; }
+.volver {
+  display:block;
+  margin-top:12px;
+  text-decoration:none;
+  font-weight:bold;
+  color:#4caf50;
+}
+</style>
+</head>
+
+<body>
+<div class="card">
+  <h3>Tipo de entrega</h3>
+
+  <div class="opcion" id="retiro" data-tipo="retiro" data-costo="0">
+    🏬 Retiro en tienda<br>
+    <small>Costo: $0</small>
+  </div>
+
+  <div class="opcion" id="delivery" data-tipo="delivery" data-costo="2500">
+    🚚 Delivery<br>
+    <small>Costo: $2.500</small>
+  </div>
+
+  <button id="confirmar">Confirmar</button>
+  <a href="index.html" class="volver">⬅ Volver</a>
+</div>
+
+<script>
+let seleccionado = null;
+
+// manejar selección visual
+document.querySelectorAll(".opcion").forEach(op => {
+  op.addEventListener("click", () => {
+    document.querySelectorAll(".opcion").forEach(o => o.classList.remove("seleccionado"));
+    op.classList.add("seleccionado");
+    seleccionado = {
+      tipo: op.dataset.tipo,
+      costo: Number(op.dataset.costo)
+    };
+  });
+});
+
+// guardar en localStorage
+document.getElementById("confirmar").addEventListener("click", () => {
+  if (!seleccionado) {
+    alert("Selecciona una opción de entrega");
+    return;
+  }
+
+  localStorage.setItem("fb_envio", JSON.stringify(seleccionado));
+  alert("Método de entrega guardado ✅");
+  location.href = "index.html";
+});
+</script>
+
+</body>
+</html>

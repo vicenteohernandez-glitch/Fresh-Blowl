@@ -1,0 +1,203 @@
+<!-- Archivo: B1_Registro.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>B-1 Registro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Puedes quitar esta CDN si no la necesitas; no es obligatoria -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
+
+  <style>
+    :root{
+      --brand:#27ae60;
+      --brand-2:#2ecc71;
+      --text:#333;
+      --danger:#d32f2f;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: var(--text);
+      background: url('https://www.panchovilla.cl/wp-content/uploads/2022/08/Ensalada-de-camaron-y-palta.jpg') no-repeat center center fixed;
+      background-size: cover;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .container {
+      background-color: rgba(255,255,255,0.92);
+      backdrop-filter: blur(2px);
+      padding: 28px;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    }
+    h3{margin-top:0; text-align:center; color:var(--brand)}
+    .field{margin:10px 0 14px}
+    label{display:block; font-weight:bold; margin-bottom:6px}
+    input[type="text"], input[type="password"], input[type="email"]{
+      width:100%; padding:11px 12px; border-radius:8px; border:1px solid #cfcfcf;
+      font-size:15px; outline:none;
+    }
+    input:focus{border-color: var(--brand)}
+    .input-row{position:relative}
+    .toggle-pass{
+      position:absolute; right:10px; top:50%; transform:translateY(-50%);
+      background:none; border:none; cursor:pointer; font-size:12px; color:#555;
+    }
+    button{
+      background-color: var(--brand);
+      color:#fff; border:none; border-radius:8px; cursor:pointer;
+      width:100%; padding:12px; font-size:16px; font-weight:bold;
+    }
+    button:hover{ background-color: var(--brand-2); }
+    .error{
+      color: var(--danger); font-size:0.95em; margin-top:8px; text-align:center; min-height:1.2em;
+    }
+    .links{
+      text-align:center; margin-top:14px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;
+    }
+    .links a{
+      color: var(--brand); text-decoration:none; font-weight:bold;
+    }
+    .links a:hover{text-decoration:underline}
+    .hint{font-size:12px; color:#666; margin-top:-6px; margin-bottom:10px}
+  </style>
+</head>
+<body>
+  <main class="container" role="main" aria-labelledby="title">
+    <h3 id="title">Registro</h3>
+
+    <div class="field">
+      <label for="email">Email</label>
+      <input type="email" id="email" placeholder="usuario@correo.com" autocomplete="email" required>
+      <div class="hint">Ejemplos de prueba: cliente1/2/3/4@example.com</div>
+    </div>
+
+    <div class="field input-row">
+      <label for="pass">Contraseña</label>
+      <input type="password" id="pass" placeholder="••••••••" autocomplete="new-password" required minlength="3">
+      <button class="toggle-pass" id="togglePass" aria-label="Mostrar u ocultar contraseña" type="button">Mostrar</button>
+    </div>
+
+    <button id="registrar">Registrar</button>
+    <p id="mensaje" class="error" aria-live="polite"></p>
+
+    <div class="links">
+      <a href="index.html">Volver al inicio</a>
+      <a href="B4_Inicio_Sesion.html">¿Ya tienes cuenta? Inicia sesión</a>
+    </div>
+  </main>
+
+  <script>
+    const emailInput = document.getElementById('email');
+    const passInput = document.getElementById('pass');
+    const registrarBtn = document.getElementById('registrar');
+    const mensaje = document.getElementById('mensaje');
+    const togglePass = document.getElementById('togglePass');
+
+    // Helpers
+    function isEmailValid(e){
+      // Valida formato básico de email
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+    }
+    function setMsg(text){ mensaje.textContent = text || ''; }
+
+    // Mostrar/ocultar contraseña
+    togglePass.addEventListener('click', () => {
+      const showing = passInput.type === 'text';
+      passInput.type = showing ? 'password' : 'text';
+      togglePass.textContent = showing ? 'Mostrar' : 'Ocultar';
+      passInput.focus();
+    });
+
+    // Submit con Enter
+    [emailInput, passInput].forEach(el=>{
+      el.addEventListener('keypress', (e)=>{
+        if(e.key === 'Enter'){ e.preventDefault(); registrarBtn.click(); }
+      });
+    });
+
+    // Lógica de registro (respeta tus casos y mensajes)
+    registrarBtn.addEventListener('click', () => {
+      const email = emailInput.value.trim();
+      const pass = passInput.value.trim();
+
+      // Validaciones mínimas
+      if (email === "" || pass === "") {
+        return setMsg("Completa email y contraseña");
+      }
+      if (!isEmailValid(email)) {
+        return setMsg("Formato de email inválido");
+      }
+
+      // Casos de prueba
+      switch(email) {
+        case "cliente1@example.com":
+          if(pass === "123") {
+            setMsg("");
+            // Redirección exacta que tenías
+            window.location.href = "B2_ValidacionE.html";
+          } else {
+            setMsg("Contraseña incorrecta");
+          }
+          break;
+
+        case "cliente2@example.com":
+          setMsg("Email no registrado");
+          break;
+
+        case "cliente3@example.com":
+          setMsg("Email ya en uso");
+          break;
+
+        case "cliente4@example.com":
+          if(pass === "345") {
+            setMsg("Contraseña no válida");
+          } else {
+            setMsg("Contraseña incorrecta");
+          }
+          break;
+
+        default:
+          setMsg("Email no registrado");
+      }
+    });
+
+    // Foco inicial
+    window.addEventListener('load', ()=> emailInput.focus());
+  </script>
+</body>
+</html>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('form-registro') 
+            || document.querySelector('form#registro') 
+            || document.querySelector('form'); // fallback
+
+  const nombreEl  = document.getElementById('nombre')   || document.querySelector('[name=nombre]');
+  const emailEl   = document.getElementById('email')    || document.querySelector('[name=email]');
+  const telEl     = document.getElementById('telefono') || document.querySelector('[name=telefono]');
+
+  if (!form) return; // por si tu pantalla aún no tiene form
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault(); // evita que recargue
+
+    const u = {
+      nombre:  (nombreEl?.value || '').trim() || 'Usuario',
+      email:   (emailEl?.value || '').trim(),
+      telefono:(telEl?.value   || '').trim()
+    };
+
+    localStorage.setItem('usuarioFB', JSON.stringify(u));
+    alert('Registro exitoso ✅');
+    location.href = 'B33_Ver_Perfil.html'; // ir a Ver Perfil
+  });
+});
+</script>

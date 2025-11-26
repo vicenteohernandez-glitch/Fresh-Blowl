@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Pago - Fresh Bowl</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
+
+<style>
+body {
+  font-family: "Poppins", sans-serif;
+  background:#f4fff5;
+  display:flex; justify-content:center; align-items:center;
+  height:100vh; margin:0;
+}
+.card {
+  background:#fff; padding:25px; width:360px;
+  border-radius:15px; text-align:center;
+  box-shadow:0 5px 18px rgba(0,0,0,.1);
+}
+button {
+  width:100%; padding:12px; border-radius:8px;
+  background:#4caf50; border:none; color:#fff; font-weight:bold;
+}
+button:hover { background:#388e3c; }
+.res { text-align:left; margin-top:15px; }
+.line { display:flex; justify-content:space-between; margin-bottom:6px; }
+.total { font-size:1.2em; font-weight:bold; margin-top:10px; }
+.volver {
+  display:block; margin-top:12px;
+  color:#4CAF50; text-decoration:none; font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+<div class="card">
+  <h3>Confirmar Pago</h3>
+
+  <div id="detalle" class="res"></div>
+  
+  <button onclick="procesarPago()">Pagar ahora ✅</button>
+  <a class="volver" href="index.html">⬅ Volver</a>
+</div>
+
+<script>
+function formato(n){ return n.toLocaleString("es-CL"); }
+
+function cargarResumen(){
+  const cart = JSON.parse(localStorage.getItem("cart") || "{}");
+  const envio = JSON.parse(localStorage.getItem("fb_envio") || "{}");
+
+  let subtotal = 0;
+  for(const id in cart){ subtotal += cart[id].price * cart[id].qty; }
+
+  const shipping = envio?.costo || 0;
+  const total = subtotal + shipping;
+
+  let html = `<div class='line'><span>Subtotal:</span><b>$${formato(subtotal)}</b></div>`;
+  html += `<div class='line'><span>Envío (${envio.tipo || "N/A"}):</span><b>$${formato(shipping)}</b></div>`;
+  html += `<div class='total'>Total a pagar: $${formato(total)}</div>`;
+
+  document.getElementById("detalle").innerHTML = html;
+}
+
+function procesarPago(){
+  alert("Pago realizado con éxito ✅");
+  location.href = "B20_Confirmacion.html";
+}
+
+cargarResumen();
+</script>
+</body>
+</html>

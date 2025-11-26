@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>B34: Perfil del Usuario</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
+
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: url('https://images.unsplash.com/photo-1603046891747-328f38e1b389?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080') no-repeat center center fixed;
+    background-size: cover;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+
+  .container {
+    background-color: rgba(255,255,255,0.93);
+    padding: 28px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  }
+
+  input, button {
+    width: 100%;
+    margin: 8px 0;
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+  }
+
+  button {
+    background-color: #27ae60;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+  }
+
+  button:hover { background-color: #2ecc71; }
+
+  .logout {
+    background-color: #c0392b;
+  }
+  .logout:hover { background-color: #e74c3c; }
+
+  .avatar {
+    width: 85px;
+    height: 85px;
+    border-radius: 50%;
+    background: #27ae60;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    margin: 0 auto 10px;
+    font-weight: bold;
+  }
+
+  .error { color: red; font-weight: bold; }
+  .success { color: green; font-weight: bold; }
+</style>
+</head>
+
+<body>
+<div class="container">
+
+  <div class="avatar" id="avatar">U</div>
+  <h3>Mi Perfil</h3>
+
+  <input type="text" id="nombre" placeholder="Nombre completo">
+  <input type="email" id="email" placeholder="Correo electrónico">
+  <input type="text" id="telefono" placeholder="Teléfono">
+
+  <button id="guardar">Guardar cambios</button>
+  <button class="logout" id="logout">Cerrar sesión</button>
+
+  <p id="mensaje"></p>
+
+  <a href="index.html">Volver al inicio</a>
+</div>
+
+<script>
+// Cargar datos guardados
+function loadProfile() {
+  const data = JSON.parse(localStorage.getItem("fb_user")) || {};
+  document.getElementById("nombre").value = data.nombre || "";
+  document.getElementById("email").value = data.email || "";
+  document.getElementById("telefono").value = data.telefono || "";
+
+  // Avatar inicial
+  document.getElementById("avatar").textContent =
+    data.nombre ? data.nombre.charAt(0).toUpperCase() : "U";
+}
+
+// Guardar cambios
+document.getElementById("guardar").addEventListener("click", () => {
+  const nombre = document.getElementById("nombre").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const telefono = document.getElementById("telefono").value.trim();
+  const msg = document.getElementById("mensaje");
+
+  if(!nombre || !email || !telefono){
+    msg.textContent = "⚠️ Completa todos los campos.";
+    msg.className = "error";
+    return;
+  }
+
+  localStorage.setItem("fb_user", JSON.stringify({ nombre, email, telefono }));
+
+  msg.textContent = "✅ Datos actualizados correctamente.";
+  msg.className = "success";
+
+  document.getElementById("avatar").textContent = nombre.charAt(0).toUpperCase();
+});
+
+// Cerrar sesión simulada
+document.getElementById("logout").addEventListener("click", () => {
+  localStorage.removeItem("fb_user");
+  alert("Sesión cerrada");
+  location.href = "index.html";
+});
+
+// Inicializa
+loadProfile();
+</script>
+
+</body>
+</html>

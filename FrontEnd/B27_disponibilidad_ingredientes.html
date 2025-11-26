@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>B27: Disponibilidad de Ingredientes</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
+
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: url('https://images.unsplash.com/photo-1511690656952-34342bb7c2f2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080') no-repeat center center fixed;
+    background-size: cover;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+
+  .container {
+    background-color: rgba(255,255,255,0.95);
+    padding: 30px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0px 4px 15px rgba(0,0,0,0.3);
+    width: 380px;
+  }
+
+  .ingrediente {
+    font-size: 18px;
+    font-weight: bold;
+  }
+
+  .available { color: #27ae60; }
+  .not-available { color: #c0392b; text-decoration: line-through; }
+
+  .toggle-btn {
+    background-color: #27ae60;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-top: 5px;
+    cursor: pointer;
+    width: 100%;
+  }
+
+  .toggle-btn.off {
+    background-color: #c0392b;
+  }
+
+  a {
+    color: #27ae60;
+    margin-top: 15px;
+    display: inline-block;
+    text-decoration: none;
+  }
+  a:hover { text-decoration: underline; }
+</style>
+</head>
+
+<body>
+<div class="container">
+  <h3>Disponibilidad de Ingredientes</h3>
+
+  <div class="ingrediente available" id="tomate">Tomate 🍅</div>
+  <button class="toggle-btn" onclick="toggle('tomate', this)">Deshabilitar Tomate</button>
+
+  <div class="ingrediente available" id="lechuga">Lechuga 🥬</div>
+  <button class="toggle-btn" onclick="toggle('lechuga', this)">Deshabilitar Lechuga</button>
+
+  <div class="ingrediente available" id="pollo">Pollo 🍗</div>
+  <button class="toggle-btn" onclick="toggle('pollo', this)">Deshabilitar Pollo</button>
+
+  <a href="index.html">Volver al inicio</a>
+</div>
+
+<script>
+function toggle(id, btn) {
+  const item = document.getElementById(id);
+  const isDisabled = item.classList.contains("not-available");
+
+  if (isDisabled) {
+    item.classList.remove("not-available");
+    item.classList.add("available");
+    btn.textContent = "Deshabilitar " + item.textContent;
+    btn.classList.remove("off");
+  } else {
+    item.classList.remove("available");
+    item.classList.add("not-available");
+    btn.textContent = "Habilitar " + item.textContent;
+    btn.classList.add("off");
+  }
+}
+</script>
+</body>
+</html>
