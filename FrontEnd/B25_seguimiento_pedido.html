@@ -2,97 +2,298 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>B25: Seguimiento de Pedido</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
-
+<title>Seguimiento de Pedido - Fresh Bowl</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-  body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: url('https://images.unsplash.com/photo-1615485296316-5c2b8b88b8c4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080') no-repeat center center fixed;
-    background-size: cover;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-  }
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  min-height: 100vh;
+  padding: 20px;
+}
+.container { max-width: 600px; margin: 0 auto; }
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+}
+h2 { color: #2e7d32; text-align: center; margin-bottom: 25px; }
 
-  .container {
-    background-color: rgba(255,255,255,0.96);
-    padding: 30px;
-    border-radius: 12px;
-    text-align: center;
-    box-shadow: 0px 4px 15px rgba(0,0,0,0.3);
-    width: 360px;
-  }
+.order-info {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  margin-bottom: 30px;
+}
+.order-info .item { text-align: center; }
+.order-info .label { font-size: 0.8em; color: #666; }
+.order-info .value { font-weight: bold; color: #333; }
 
-  button {
-    background-color: #16a085;
-    color: white;
-    border: none;
-    padding: 10px;
-    width: 100%;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 15px;
-  }
-  button:hover { background-color: #1abc9c; }
+.timeline {
+  position: relative;
+  padding-left: 30px;
+}
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 10px;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: #e0e0e0;
+}
+.timeline-item {
+  position: relative;
+  padding-bottom: 30px;
+}
+.timeline-item:last-child { padding-bottom: 0; }
+.timeline-item .dot {
+  position: absolute;
+  left: -26px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #e0e0e0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7em;
+  color: white;
+}
+.timeline-item.completed .dot { background: #27ae60; }
+.timeline-item.current .dot {
+  background: #27ae60;
+  box-shadow: 0 0 0 4px rgba(39, 174, 96, 0.3);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(39, 174, 96, 0.3); }
+  50% { box-shadow: 0 0 0 8px rgba(39, 174, 96, 0.1); }
+}
+.timeline-item .content { padding-left: 15px; }
+.timeline-item .title { font-weight: bold; color: #333; margin-bottom: 5px; }
+.timeline-item .desc { font-size: 0.9em; color: #666; }
+.timeline-item .time { font-size: 0.8em; color: #999; margin-top: 5px; }
+.timeline-item.pending .title { color: #999; }
 
-  .estado {
-    margin-top: 15px;
-    font-weight: bold;
-    font-size: 18px;
-  }
+.delivery-info {
+  background: #e3f2fd;
+  padding: 20px;
+  border-radius: 8px;
+  margin-top: 25px;
+}
+.delivery-info h4 { margin: 0 0 15px 0; color: #1565c0; }
+.delivery-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+}
+.delivery-row .label { color: #666; }
+.delivery-row .value { font-weight: bold; }
 
-  a { color: #16a085; text-decoration: none; margin-top: 15px; display: inline-block; }
-  a:hover { text-decoration: underline; }
+.map-placeholder {
+  background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+  height: 200px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  margin-top: 20px;
+}
+.map-placeholder .icon { font-size: 3em; margin-bottom: 10px; }
+.map-placeholder .text { color: #666; }
 
-  .progress-container {
-    width: 100%;
-    background: #e0e0e0;
-    border-radius: 6px;
-    margin-top: 15px;
-  }
+.btn {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1em;
+  font-weight: bold;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  margin-top: 15px;
+}
+.btn-primary { background: #27ae60; color: white; }
+.btn-primary:hover { background: #2ecc71; }
+.btn-outline { background: transparent; border: 2px solid #27ae60; color: #27ae60; }
 
-  .progress-bar {
-    height: 12px;
-    width: 0%;
-    background: #16a085;
-    border-radius: 6px;
-    transition: width 0.7s ease-in-out;
-  }
+.links { text-align: center; margin-top: 20px; }
+.links a { color: #27ae60; text-decoration: none; margin: 0 15px; }
+
+.no-order {
+  text-align: center;
+  padding: 40px;
+}
+.no-order a {
+  display: inline-block;
+  margin-top: 15px;
+  background: #27ae60;
+  color: white;
+  padding: 12px 25px;
+  border-radius: 8px;
+  text-decoration: none;
+}
 </style>
 </head>
 <body>
-
 <div class="container">
-  <h3>Seguimiento de Pedido</h3>
-  <div class="progress-container"><div id="progress" class="progress-bar"></div></div>
-  <p id="estado" class="estado">Estado actual: Preparando... 🍳</p>
-  <button id="actualizar">Actualizar Estado</button>
-  <a href="index.html">Volver al inicio</a>
+  <div class="card" id="content">
+    <!-- Contenido cargado dinámicamente -->
+  </div>
+  <div class="links">
+    <a href="B11_Historial_Pedidos.html">Ver todos mis pedidos</a>
+    <a href="index.html">Inicio</a>
+  </div>
 </div>
-
+<script src="api.js"></script>
 <script>
-const estado = document.getElementById('estado');
-const progress = document.getElementById('progress');
-
-const estados = [
-  { texto: "En preparación 🍳", progreso: 30 },
-  { texto: "Listo para envío 📦", progreso: 60 },
-  { texto: "En camino 🚚", progreso: 85 },
-  { texto: "Entregado ✅", progreso: 100 }
+// Estados del pedido con tiempos simulados
+const estadosPedido = [
+  { id: 'confirmado', titulo: 'Pedido Confirmado', desc: 'Tu pedido ha sido recibido', icon: '✓' },
+  { id: 'preparando', titulo: 'En Preparación', desc: 'Estamos preparando tu ensalada fresca', icon: '👨‍🍳' },
+  { id: 'listo', titulo: 'Listo para Envío', desc: 'Tu pedido está empacado y listo', icon: '📦' },
+  { id: 'enviado', titulo: 'En Camino', desc: 'El repartidor va en camino a tu dirección', icon: '🚚' },
+  { id: 'entregado', titulo: 'Entregado', desc: '¡Disfruta tu Fresh Bowl!', icon: '🎉' }
 ];
 
-let index = 0;
+let estadoActual = 0;
+let intervaloSimulacion = null;
 
-document.getElementById('actualizar').addEventListener('click', () => {
-  index = (index + 1) % estados.length;
-  estado.textContent = `Estado actual: ${estados[index].texto}`;
-  progress.style.width = estados[index].progreso + "%";
-});
+function fmtHora(offset = 0) {
+  const d = new Date(Date.now() - offset * 60000);
+  return d.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
+}
+
+function cargarSeguimiento() {
+  const content = document.getElementById('content');
+  const pago = JSON.parse(localStorage.getItem('pagoCompletado') || 'null');
+  
+  if (!pago) {
+    content.innerHTML = '<div class="no-order"><p>No hay un pedido activo para seguir</p><a href="B6_ListaProducto.html">Ver productos</a></div>';
+    return;
+  }
+  
+  renderSeguimiento(pago);
+  iniciarSimulacion();
+}
+
+function renderSeguimiento(pago) {
+  const content = document.getElementById('content');
+  const idCorto = pago.pedido_id ? pago.pedido_id.slice(-8).toUpperCase() : 'DEMO';
+  
+  let timelineHTML = estadosPedido.map((estado, idx) => {
+    let clase = '';
+    let tiempo = '';
+    
+    if (idx < estadoActual) {
+      clase = 'completed';
+      tiempo = fmtHora((estadoActual - idx) * 5);
+    } else if (idx === estadoActual) {
+      clase = 'current';
+      tiempo = 'Ahora';
+    } else {
+      clase = 'pending';
+      tiempo = 'Pendiente';
+    }
+    
+    return `
+      <div class="timeline-item ${clase}">
+        <div class="dot">${estado.icon}</div>
+        <div class="content">
+          <div class="title">${estado.titulo}</div>
+          <div class="desc">${estado.desc}</div>
+          <div class="time">${tiempo}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  const tiempoEstimado = Math.max(0, (4 - estadoActual) * 8);
+  
+  content.innerHTML = `
+    <h2>📍 Seguimiento de Pedido</h2>
+    
+    <div class="order-info">
+      <div class="item">
+        <div class="label">Nº Pedido</div>
+        <div class="value">#${idCorto}</div>
+      </div>
+      <div class="item">
+        <div class="label">Estado</div>
+        <div class="value" style="color: #27ae60">${estadosPedido[estadoActual].titulo}</div>
+      </div>
+      <div class="item">
+        <div class="label">Tiempo Est.</div>
+        <div class="value">${tiempoEstimado > 0 ? tiempoEstimado + ' min' : '¡Llegó!'}</div>
+      </div>
+    </div>
+    
+    <div class="timeline">
+      ${timelineHTML}
+    </div>
+    
+    ${estadoActual >= 3 ? `
+      <div class="map-placeholder">
+        <div class="icon">🗺️</div>
+        <div class="text">Mapa de seguimiento en tiempo real</div>
+      </div>
+    ` : ''}
+    
+    <div class="delivery-info">
+      <h4>📦 Información de Entrega</h4>
+      <div class="delivery-row">
+        <span class="label">Tipo</span>
+        <span class="value">Delivery</span>
+      </div>
+      <div class="delivery-row">
+        <span class="label">Repartidor</span>
+        <span class="value">${estadoActual >= 3 ? 'Carlos M. ⭐ 4.8' : 'Por asignar'}</span>
+      </div>
+    </div>
+    
+    <button class="btn btn-primary" onclick="actualizarEstado()">
+      🔄 Simular Avance
+    </button>
+    <a href="B22_boleta_digital.html" class="btn btn-outline">
+      📄 Ver Boleta
+    </a>
+  `;
+}
+
+function actualizarEstado() {
+  const pago = JSON.parse(localStorage.getItem('pagoCompletado') || '{}');
+  if (estadoActual < estadosPedido.length - 1) {
+    estadoActual++;
+    renderSeguimiento(pago);
+    
+    if (estadoActual === estadosPedido.length - 1) {
+      clearInterval(intervaloSimulacion);
+    }
+  }
+}
+
+function iniciarSimulacion() {
+  // Auto-avanzar cada 10 segundos (demo)
+  intervaloSimulacion = setInterval(() => {
+    if (estadoActual < estadosPedido.length - 1) {
+      actualizarEstado();
+    } else {
+      clearInterval(intervaloSimulacion);
+    }
+  }, 10000);
+}
+
+cargarSeguimiento();
 </script>
-
 </body>
 </html>
-B

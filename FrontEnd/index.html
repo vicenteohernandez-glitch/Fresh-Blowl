@@ -285,60 +285,74 @@ style="width:100%; margin-top:10px; padding:8px; background:#4CAF50; color:white
     renderCarrito();
   });
 
-  function addToCart(productId, price) {
-    let cart = JSON.parse(localStorage.getItem('cart')) || {};
-    if(cart[productId]) cart[productId].qty += 1;
-    else cart[productId] = {price: price, qty:1};
-    localStorage.setItem('cart', JSON.stringify(cart));
+  function addToCart(productId, price, nombre = null) {
+    let cart = JSON.parse(localStorage.getItem('carritoFB')) || [];
+    const existente = cart.find(item => item.sku === productId);
+    if (existente) {
+      existente.cantidad += 1;
+    } else {
+      cart.push({
+        sku: productId,
+        nombre: nombre || productId.replaceAll('_', ' '),
+        precio: price,
+        cantidad: 1,
+        img: ''
+      });
+    }
+    localStorage.setItem('carritoFB', JSON.stringify(cart));
     renderCarrito();
     updateCartHeader();
   }
 
   function removeItem(productId) {
-    let cart = JSON.parse(localStorage.getItem('cart')) || {};
-    delete cart[productId];
-    localStorage.setItem('cart', JSON.stringify(cart));
+    let cart = JSON.parse(localStorage.getItem('carritoFB')) || [];
+    cart = cart.filter(item => item.sku !== productId);
+    localStorage.setItem('carritoFB', JSON.stringify(cart));
     renderCarrito();
     updateCartHeader();
   }
 
 function updateCartHeader() {
-  const cart = JSON.parse(localStorage.getItem('cart')) || {};
+  const cart = JSON.parse(localStorage.getItem('carritoFB')) || [];
   let subtotal = 0, totalItems = 0;
-  for (const id in cart) {
-    subtotal += cart[id].price * cart[id].qty;
-    totalItems += cart[id].qty;
-  }
+  cart.forEach(item => {
+    subtotal += item.precio * item.cantidad;
+    totalItems += item.cantidad;
+  });
 
   // sumar envío solo si fue elegido en B24
   const envio = JSON.parse(localStorage.getItem('fb_envio') || 'null');
   const shipping = envio ? Number(envio.costo || 0) : 0;
 
   const total = subtotal + shipping;
-  carritoHeader.textContent = `🛒 $${total.toLocaleString('es-CL')}`;
+  carritoHeader.textContent = `🛒 $${total.toLocaleString('es-CL')} (${totalItems})`;
 }
 
 
   function renderCarrito() {
-    const cart = JSON.parse(localStorage.getItem('cart')) || {};
+    const cart = JSON.parse(localStorage.getItem('carritoFB')) || [];
     const lista = document.getElementById('lista-carrito');
     lista.innerHTML = '';
     let total = 0;
-    for(const id in cart){
-      const item = cart[id];
-      total += item.price * item.qty;
+    
+    if (cart.length === 0) {
+      lista.innerHTML = '<p style="color:#999;text-align:center;">Carrito vacío</p>';
+    }
+    
+    cart.forEach(item => {
+      total += item.precio * item.cantidad;
       const div = document.createElement('div');
       div.style.display='flex';
       div.style.justifyContent='space-between';
       div.style.alignItems='center';
       div.style.marginBottom='8px';
       div.innerHTML = `
-        <span>${id.replaceAll("_"," ")}</span>
-        <span>$${(item.price*item.qty).toLocaleString('es-CL')}</span>
-        <button onclick="removeItem('${id}')" style="background:#f44336;color:white;border:none;padding:2px 6px;border-radius:4px;cursor:pointer;">Eliminar</button>
+        <span>${item.nombre} x${item.cantidad}</span>
+        <span>$${(item.precio * item.cantidad).toLocaleString('es-CL')}</span>
+        <button onclick="removeItem('${item.sku}')" style="background:#f44336;color:white;border:none;padding:2px 6px;border-radius:4px;cursor:pointer;">✕</button>
       `;
       lista.appendChild(div);
-    }
+    });
     document.getElementById('total-carrito').textContent = `$${total.toLocaleString('es-CL')}`;
   }
 
@@ -374,9 +388,9 @@ function updateCartHeader() {
   // Init
   window.addEventListener('load', updateCartHeader);
   function finalizarCompra() {
-  const cart = JSON.parse(localStorage.getItem('cart') || '{}');
+  const cart = JSON.parse(localStorage.getItem('carritoFB') || '[]');
 
-  if (Object.keys(cart).length === 0) {
+  if (cart.length === 0) {
     alert("Tu carrito está vacío 🛒");
     return;
   }
@@ -389,16 +403,8 @@ function updateCartHeader() {
     return;
   }
 
-  // ¿Ya seleccionó entrega?
-  const envio = JSON.parse(localStorage.getItem("fb_envio") || "null");
-  if (!envio) {
-    alert("Selecciona tu método de entrega");
-    location.href = "B24_Seleccion_Entrega.html";
-    return;
-  }
-
-  // Todo OK → ir a pago simulado
-  location.href = "B21_Pago.html";
+  // Ir a crear pedido (donde puede elegir entrega)
+  location.href = "B18_Crear_Pedido.html";
 }
 
 </script>

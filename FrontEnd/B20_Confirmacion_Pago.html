@@ -4,44 +4,248 @@
 <meta charset="UTF-8">
 <title>Pedido Confirmado - Fresh Bowl</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
 <style>
+* { box-sizing: border-box; }
 body {
-  margin:0; font-family:"Poppins",sans-serif;
-  background:#f4fff5;
-  display:flex; justify-content:center; align-items:center;
-  height:100vh;
+  margin: 0;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
 }
 .card {
-  background:#fff; padding:25px; width:360px;
-  border-radius:15px; text-align:center;
-  box-shadow:0 5px 18px rgba(0,0,0,.1);
+  background: white;
+  padding: 40px;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+  max-width: 450px;
+  width: 100%;
 }
-h2 { color:#2e7d32; }
-button {
-  margin-top:12px; width:100%; padding:12px;
-  border:none; border-radius:8px; font-weight:bold;
-  background:#4CAF50; color:white; cursor:pointer;
+.success-icon {
+  width: 80px;
+  height: 80px;
+  background: #e8f5e9;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  font-size: 2.5em;
+  animation: pulse 2s ease-in-out infinite;
 }
-button:hover { background:#388e3c; }
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+h2 { color: #2e7d32; margin-bottom: 10px; }
+.subtitle { color: #666; margin-bottom: 25px; }
+
+.order-info {
+  background: #f9f9f9;
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 25px;
+  text-align: left;
+}
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+}
+.info-row:last-child { border-bottom: none; }
+.info-row .label { color: #666; }
+.info-row .value { font-weight: bold; color: #333; }
+.info-row.total .value { color: #2e7d32; font-size: 1.1em; }
+
+.timeline {
+  display: flex;
+  justify-content: space-between;
+  margin: 25px 0;
+  position: relative;
+}
+.timeline::before {
+  content: '';
+  position: absolute;
+  top: 15px;
+  left: 15%;
+  right: 15%;
+  height: 3px;
+  background: #e0e0e0;
+}
+.timeline-step {
+  text-align: center;
+  z-index: 1;
+  flex: 1;
+}
+.timeline-step .dot {
+  width: 30px;
+  height: 30px;
+  background: #e0e0e0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 8px;
+  font-size: 0.8em;
+  color: white;
+}
+.timeline-step.active .dot {
+  background: #27ae60;
+}
+.timeline-step.active .dot::after {
+  content: '✓';
+}
+.timeline-step .text {
+  font-size: 0.75em;
+  color: #666;
+}
+
+.buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.btn {
+  padding: 14px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1em;
+  font-weight: bold;
+  cursor: pointer;
+  text-decoration: none;
+  display: block;
+  text-align: center;
+  transition: all 0.3s;
+}
+.btn-primary {
+  background: #27ae60;
+  color: white;
+}
+.btn-primary:hover { background: #2ecc71; }
+.btn-outline {
+  background: transparent;
+  border: 2px solid #27ae60;
+  color: #27ae60;
+}
+.btn-outline:hover { background: #e8f5e9; }
 </style>
 </head>
-
 <body>
-<div class="card">
-  <h2>🎉 ¡Gracias por tu compra!</h2>
-  <p>Tu pedido ha sido confirmado y está siendo preparado 🥗</p>
 
-  <button onclick="volverInicio()">Volver al inicio</button>
+<div class="card">
+  <div class="success-icon">✓</div>
+  <h2>¡Pago Exitoso!</h2>
+  <p class="subtitle">Tu pedido ha sido confirmado y está siendo preparado</p>
+
+  <div class="order-info" id="orderInfo">
+    <!-- Información del pedido -->
+  </div>
+
+  <div class="timeline">
+    <div class="timeline-step active">
+      <div class="dot"></div>
+      <div class="text">Confirmado</div>
+    </div>
+    <div class="timeline-step">
+      <div class="dot">2</div>
+      <div class="text">Preparando</div>
+    </div>
+    <div class="timeline-step">
+      <div class="dot">3</div>
+      <div class="text">En camino</div>
+    </div>
+    <div class="timeline-step">
+      <div class="dot">4</div>
+      <div class="text">Entregado</div>
+    </div>
+  </div>
+
+  <div class="buttons">
+    <a href="B25_seguimiento_pedido.html" class="btn btn-primary">
+      📍 Seguir mi pedido
+    </a>
+    <a href="B22_boleta_digital.html" class="btn btn-outline">
+      📄 Ver boleta digital
+    </a>
+    <a href="index.html" class="btn btn-outline" onclick="limpiarDatos()">
+      🏠 Volver al inicio
+    </a>
+  </div>
 </div>
 
 <script>
-function volverInicio(){
-  localStorage.removeItem("cart"); // limpiar carrito
-  localStorage.removeItem("fb_envio"); // limpiar método entrega
-  location.href = "index.html";
+// Formatear precio
+function fmtCLP(n) {
+  return new Intl.NumberFormat('es-CL', {
+    style: 'currency',
+    currency: 'CLP',
+    maximumFractionDigits: 0
+  }).format(n);
 }
-</script>
 
+// Formatear fecha
+function fmtFecha(iso) {
+  return new Date(iso).toLocaleString('es-CL', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
+// Cargar info del pago
+function cargarInfo() {
+  const container = document.getElementById('orderInfo');
+  const pago = JSON.parse(localStorage.getItem('pagoCompletado') || '{}');
+  
+  if (!pago.pedido_id) {
+    container.innerHTML = `
+      <div class="info-row">
+        <span class="label">Estado</span>
+        <span class="value">Confirmado ✓</span>
+      </div>
+    `;
+    return;
+  }
+
+  const metodosNombre = {
+    'tarjeta': 'Tarjeta de crédito',
+    'transferencia': 'Transferencia bancaria',
+    'webpay': 'Webpay Plus'
+  };
+
+  container.innerHTML = `
+    <div class="info-row">
+      <span class="label">Nº Pedido</span>
+      <span class="value">#${pago.pedido_id.slice(-8).toUpperCase()}</span>
+    </div>
+    <div class="info-row">
+      <span class="label">Fecha</span>
+      <span class="value">${fmtFecha(pago.fecha)}</span>
+    </div>
+    <div class="info-row">
+      <span class="label">Método de pago</span>
+      <span class="value">${metodosNombre[pago.metodo] || pago.metodo}</span>
+    </div>
+    <div class="info-row total">
+      <span class="label">Total pagado</span>
+      <span class="value">${fmtCLP(pago.total)}</span>
+    </div>
+  `;
+}
+
+function limpiarDatos() {
+  localStorage.removeItem('carritoFB');
+  localStorage.removeItem('pedidoActual');
+}
+
+cargarInfo();
+</script>
 </body>
 </html>

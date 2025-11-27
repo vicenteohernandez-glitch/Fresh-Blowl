@@ -2,135 +2,245 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>B34: Perfil del Usuario</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
-
+<title>Editar Perfil - Fresh Bowl</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-  body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: url('https://images.unsplash.com/photo-1603046891747-328f38e1b389?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080') no-repeat center center fixed;
-    background-size: cover;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-  }
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
 
-  .container {
-    background-color: rgba(255,255,255,0.93);
-    padding: 28px;
-    border-radius: 12px;
-    width: 90%;
-    max-width: 400px;
-    text-align: center;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-  }
+.container {
+  background: white;
+  padding: 35px;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+}
 
-  input, button {
-    width: 100%;
-    margin: 8px 0;
-    padding: 12px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-  }
+.avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 42px;
+  margin: 0 auto 20px;
+  font-weight: bold;
+  box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+}
 
-  button {
-    background-color: #27ae60;
-    color: white;
-    border: none;
-    cursor: pointer;
-    font-weight: bold;
-  }
+h2 {
+  text-align: center;
+  color: #2e7d32;
+  margin-bottom: 25px;
+}
 
-  button:hover { background-color: #2ecc71; }
+.form-group {
+  margin-bottom: 18px;
+}
 
-  .logout {
-    background-color: #c0392b;
-  }
-  .logout:hover { background-color: #e74c3c; }
+label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #333;
+  font-size: 0.9em;
+}
 
-  .avatar {
-    width: 85px;
-    height: 85px;
-    border-radius: 50%;
-    background: #27ae60;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 32px;
-    margin: 0 auto 10px;
-    font-weight: bold;
-  }
+input {
+  width: 100%;
+  padding: 14px;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  font-size: 1em;
+  transition: border-color 0.3s;
+}
 
-  .error { color: red; font-weight: bold; }
-  .success { color: green; font-weight: bold; }
+input:focus {
+  outline: none;
+  border-color: #27ae60;
+}
+
+input:disabled {
+  background: #f5f5f5;
+  color: #999;
+}
+
+.btn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  font-size: 1em;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: all 0.3s;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+  color: white;
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(39,174,96,0.3); }
+.btn-primary:disabled { background: #ccc; transform: none; cursor: not-allowed; }
+
+.btn-secondary {
+  background: #f5f5f5;
+  color: #333;
+}
+.btn-secondary:hover { background: #eee; }
+
+.mensaje {
+  text-align: center;
+  padding: 12px;
+  border-radius: 8px;
+  margin-top: 15px;
+  font-weight: 500;
+  display: none;
+}
+.mensaje.error { display: block; background: #ffebee; color: #c62828; }
+.mensaje.success { display: block; background: #e8f5e9; color: #2e7d32; }
+
+.links {
+  text-align: center;
+  margin-top: 20px;
+}
+.links a {
+  color: #27ae60;
+  text-decoration: none;
+  font-weight: 500;
+}
+.links a:hover { text-decoration: underline; }
+
+.loading {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  border-top-color: transparent;
+  animation: spin 0.8s linear infinite;
+  margin-right: 8px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
-
 <body>
+
 <div class="container">
-
   <div class="avatar" id="avatar">U</div>
-  <h3>Mi Perfil</h3>
+  <h2>✏️ Editar Perfil</h2>
 
-  <input type="text" id="nombre" placeholder="Nombre completo">
-  <input type="email" id="email" placeholder="Correo electrónico">
-  <input type="text" id="telefono" placeholder="Teléfono">
+  <div class="form-group">
+    <label for="nombre">Nombre completo</label>
+    <input type="text" id="nombre" placeholder="Tu nombre">
+  </div>
 
-  <button id="guardar">Guardar cambios</button>
-  <button class="logout" id="logout">Cerrar sesión</button>
+  <div class="form-group">
+    <label for="email">Correo electrónico</label>
+    <input type="email" id="email" placeholder="correo@ejemplo.com" disabled>
+    <small style="color:#999; font-size:0.8em;">El email no se puede cambiar</small>
+  </div>
 
-  <p id="mensaje"></p>
+  <div class="form-group">
+    <label for="telefono">Teléfono</label>
+    <input type="tel" id="telefono" placeholder="+56 9 1234 5678">
+  </div>
 
-  <a href="index.html">Volver al inicio</a>
+  <button class="btn btn-primary" id="guardar">💾 Guardar cambios</button>
+  <button class="btn btn-secondary" onclick="location.href='B33_ver_perfil.html'">← Volver al perfil</button>
+
+  <div class="mensaje" id="mensaje"></div>
+
+  <div class="links">
+    <a href="B35_Cambio_Contrasena.html">Cambiar contraseña</a> |
+    <a href="B37_Eliminar_Cuenta.html" style="color:#c62828;">Eliminar cuenta</a>
+  </div>
 </div>
 
+<script src="api.js"></script>
 <script>
-// Cargar datos guardados
-function loadProfile() {
-  const data = JSON.parse(localStorage.getItem("fb_user")) || {};
-  document.getElementById("nombre").value = data.nombre || "";
-  document.getElementById("email").value = data.email || "";
-  document.getElementById("telefono").value = data.telefono || "";
+const usuario = JSON.parse(localStorage.getItem("usuarioFB") || "null");
 
-  // Avatar inicial
-  document.getElementById("avatar").textContent =
-    data.nombre ? data.nombre.charAt(0).toUpperCase() : "U";
+// Verificar sesión
+if (!usuario || !usuario._id) {
+  alert("Debes iniciar sesión");
+  location.href = "B4_Inicio_Sesion.html";
+}
+
+// Cargar datos actuales
+function cargarDatos() {
+  document.getElementById("nombre").value = usuario.nombre || "";
+  document.getElementById("email").value = usuario.email || "";
+  document.getElementById("telefono").value = usuario.telefono || "";
+  
+  const inicial = (usuario.nombre || "U").charAt(0).toUpperCase();
+  document.getElementById("avatar").textContent = inicial;
+}
+
+// Mostrar mensaje
+function mostrarMensaje(texto, tipo) {
+  const msg = document.getElementById("mensaje");
+  msg.textContent = texto;
+  msg.className = "mensaje " + tipo;
 }
 
 // Guardar cambios
-document.getElementById("guardar").addEventListener("click", () => {
+document.getElementById("guardar").addEventListener("click", async () => {
   const nombre = document.getElementById("nombre").value.trim();
-  const email = document.getElementById("email").value.trim();
   const telefono = document.getElementById("telefono").value.trim();
-  const msg = document.getElementById("mensaje");
-
-  if(!nombre || !email || !telefono){
-    msg.textContent = "⚠️ Completa todos los campos.";
-    msg.className = "error";
+  const btn = document.getElementById("guardar");
+  
+  if (!nombre) {
+    mostrarMensaje("⚠️ El nombre es obligatorio", "error");
     return;
   }
-
-  localStorage.setItem("fb_user", JSON.stringify({ nombre, email, telefono }));
-
-  msg.textContent = "✅ Datos actualizados correctamente.";
-  msg.className = "success";
-
-  document.getElementById("avatar").textContent = nombre.charAt(0).toUpperCase();
+  
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loading"></span> Guardando...';
+  
+  try {
+    // Llamar a la API para actualizar
+    const response = await API.actualizarUsuario(usuario._id, { nombre, telefono });
+    
+    // Actualizar localStorage
+    const usuarioActualizado = { ...usuario, nombre, telefono };
+    localStorage.setItem("usuarioFB", JSON.stringify(usuarioActualizado));
+    
+    // Actualizar avatar
+    document.getElementById("avatar").textContent = nombre.charAt(0).toUpperCase();
+    
+    mostrarMensaje("✅ Perfil actualizado correctamente", "success");
+  } catch (error) {
+    console.error("Error:", error);
+    
+    // Guardar localmente de todos modos (demo)
+    const usuarioActualizado = { ...usuario, nombre, telefono };
+    localStorage.setItem("usuarioFB", JSON.stringify(usuarioActualizado));
+    document.getElementById("avatar").textContent = nombre.charAt(0).toUpperCase();
+    
+    mostrarMensaje("✅ Perfil actualizado localmente", "success");
+  }
+  
+  btn.disabled = false;
+  btn.innerHTML = '💾 Guardar cambios';
 });
 
-// Cerrar sesión simulada
-document.getElementById("logout").addEventListener("click", () => {
-  localStorage.removeItem("fb_user");
-  alert("Sesión cerrada");
-  location.href = "index.html";
-});
-
-// Inicializa
-loadProfile();
+// Inicializar
+cargarDatos();
 </script>
-
 </body>
 </html>

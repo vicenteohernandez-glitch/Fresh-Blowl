@@ -2,223 +2,196 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>B21: Pasarela de Pago</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
+<title>Boleta Digital - Fresh Bowl</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-  body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: url('https://images.unsplash.com/photo-1612874742935-6b0f8c5a4e3a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8cGFnb3xlbnwwfHx8fDE2OTc4ODUyMjc&ixlib=rb-4.0.3&q=80&w=1080') no-repeat center center fixed;
-    background-size: cover;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-  }
-  .container {
-    background-color: rgba(255,255,255,0.95);
-    padding: 30px;
-    border-radius: 10px;
-    max-width: 420px;
-    width: 100%;
-    text-align: center;
-    box-shadow: 0px 4px 15px rgba(0,0,0,0.3);
-  }
-  .muted { color:#666; font-size:.9em; }
-  .total { font-weight:bold; margin:6px 0 14px; }
-  input[type="text"], input[type="number"], input[type="month"] {
-    width: 100%; padding: 10px; margin: 10px 0;
-    border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box;
-  }
-  button {
-    background-color: #27ae60; color: white; padding: 10px 20px;
-    border: none; border-radius: 5px; cursor: pointer; width: 100%; font-size: 16px; margin-top: 5px;
-  }
-  button:hover { background-color: #2ecc71; }
-  #cancelarBtn { background:#e74c3c; margin-top:6px }
-  .error { color: #e53935; font-size: 0.95em; margin-top: 10px; font-weight:bold }
-  .success { color: #2e7d32; font-size: 0.95em; margin-top: 10px; font-weight:bold }
-  .links { margin-top:10px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap }
-  .links a { display:inline-block; padding:8px 12px; border-radius:8px; border:2px solid #27ae60; color:#27ae60; text-decoration:none; font-weight:700 }
-  .links a:hover { background:#27ae60; color:#fff }
-  a.back { display:block; margin-top:14px; color:#27ae60; font-weight:bold; text-decoration:none }
-  a.back:hover{ text-decoration:underline }
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  min-height: 100vh;
+  padding: 20px;
+}
+.container { max-width: 500px; margin: 0 auto; }
+.boleta {
+  background: white;
+  border-radius: 0;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  overflow: hidden;
+}
+.boleta-header {
+  background: linear-gradient(135deg, #27ae60, #2ecc71);
+  color: white;
+  padding: 25px;
+  text-align: center;
+}
+.boleta-header .logo { font-size: 2em; margin-bottom: 5px; }
+.boleta-header h2 { margin: 0; font-size: 1.3em; }
+.boleta-header .subtitle { opacity: 0.9; font-size: 0.9em; margin-top: 5px; }
+.boleta-body { padding: 25px; }
+.boleta-info {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px dashed #ddd;
+}
+.info-item .label { font-size: 0.8em; color: #666; margin-bottom: 3px; }
+.info-item .value { font-weight: bold; color: #333; }
+.boleta-items { margin-bottom: 20px; }
+.boleta-items h4 { margin: 0 0 15px 0; color: #333; }
+.item-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+.item-row:last-child { border-bottom: none; }
+.item-name { flex: 1; }
+.item-qty { color: #666; margin: 0 15px; }
+.item-price { font-weight: bold; min-width: 80px; text-align: right; }
+.boleta-totals {
+  background: #f9f9f9;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 0;
+}
+.total-row.final {
+  border-top: 2px solid #27ae60;
+  margin-top: 10px;
+  padding-top: 15px;
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #27ae60;
+}
+.boleta-footer {
+  text-align: center;
+  padding: 20px;
+  border-top: 1px dashed #ddd;
+}
+.boleta-footer .gracias { font-size: 1.1em; color: #27ae60; margin-bottom: 10px; }
+.boleta-footer .codigo {
+  font-family: monospace;
+  background: #f5f5f5;
+  padding: 10px;
+  border-radius: 5px;
+  font-size: 0.9em;
+  color: #666;
+}
+.actions { display: flex; gap: 10px; margin-top: 20px; }
+.btn {
+  flex: 1;
+  padding: 14px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1em;
+  font-weight: bold;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+}
+.btn-primary { background: #27ae60; color: white; }
+.btn-primary:hover { background: #2ecc71; }
+.btn-outline { background: transparent; border: 2px solid #27ae60; color: #27ae60; }
+.links { text-align: center; margin-top: 20px; }
+.links a { color: #27ae60; text-decoration: none; font-weight: 500; }
+.no-boleta {
+  background: white;
+  padding: 40px;
+  border-radius: 12px;
+  text-align: center;
+}
+.no-boleta a {
+  display: inline-block;
+  margin-top: 15px;
+  background: #27ae60;
+  color: white;
+  padding: 12px 25px;
+  border-radius: 8px;
+  text-decoration: none;
+}
+@media print {
+  body { background: white; padding: 0; }
+  .actions, .links { display: none; }
+  .boleta { box-shadow: none; }
+}
 </style>
 </head>
 <body>
-
 <div class="container">
-  <h3>Pasarela de Pago</h3>
-  <p class="muted">Introduce los datos de tu tarjeta para completar el pago.</p>
-
-  <div id="resumen">
-    <div class="total">Total a pagar: <span id="totalPagar">$0</span></div>
-  </div>
-
-  <input type="text" id="numeroTarjeta" placeholder="Número de tarjeta (16 dígitos)" inputmode="numeric" maxlength="19">
-  <input type="text" id="cvv" placeholder="CVV (3–4 dígitos)" inputmode="numeric" maxlength="4">
-  <input type="month" id="fechaExp" placeholder="Fecha expiración">
-
-  <button id="confirmarPago">Confirmar Pago</button>
-  <button id="cancelarBtn">Cancelar</button>
-
-  <p id="mensajePago" class="error"></p>
-  <div id="postPago" class="links" style="display:none"></div>
-
-  <a href="index.html" class="back">Volver al inicio</a>
+  <div id="content"></div>
 </div>
-
+<script src="api.js"></script>
 <script>
-// ======= Utilidades de carrito / pedidos =======
-function getCart(){ return JSON.parse(localStorage.getItem('cart')||"{}"); }
-function setCart(c){ localStorage.setItem('cart', JSON.stringify(c)); }
-function clearCart(){ localStorage.removeItem('cart'); }
-function getOrders(){ return JSON.parse(localStorage.getItem('orders')||"[]"); }
-function setOrders(arr){ localStorage.setItem('orders', JSON.stringify(arr)); }
-function fmtCLP(n){ return '$' + Number(n||0).toLocaleString('es-CL'); }
-
-function totalDesdeCarrito(){
-  const cart = getCart();
-  let subtotal = 0, items = 0;
-  Object.keys(cart).forEach(k=>{
-    subtotal += cart[k].price * cart[k].qty;
-    items += cart[k].qty;
-  });
-  const shipping = items > 0 ? 2500 : 0;
-  return { subtotal, shipping, total: subtotal + shipping };
+function fmtCLP(n) {
+  return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format(n);
 }
-
-function crearPedidoDesdeCarrito(email="cliente3@example.com"){
-  const cart = getCart();
-  const keys = Object.keys(cart);
-  if(keys.length === 0) return null;
-
-  const items = keys.map(id => ({
-    id,
-    name: cart[id].name || id.replaceAll('_',' '),
-    qty: cart[id].qty,
-    price: cart[id].price
-  }));
-  const t = totalDesdeCarrito();
-  const order = {
-    id: "ORD-" + Math.floor(Math.random()*90000+10000),
-    dateISO: new Date().toISOString(),
-    email,
-    items,
-    total: t.total,
-    estado: "Pagado"
-  };
-  const orders = getOrders();
-  orders.push(order);
-  setOrders(orders);
-  clearCart();
-  return order;
+function fmtFecha(iso) {
+  if (!iso) return new Date().toLocaleString('es-CL');
+  return new Date(iso).toLocaleString('es-CL', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
+function generarNumeroBoleta() { return 'FB-' + Date.now().toString().slice(-8); }
 
-// ======= Mostrar total del carrito =======
-(function initResumen(){
-  const t = totalDesdeCarrito();
-  document.getElementById('totalPagar').textContent = fmtCLP(t.total);
-})();
-
-// ======= Helpers de validación de tarjeta =======
-function onlyDigits(s){ return (s||'').replace(/\D/g,''); }
-function luhnOk(cardNumber){
-  const s = onlyDigits(cardNumber);
-  if(s.length < 12) return false;
-  let sum = 0, alt = false;
-  for(let i = s.length - 1; i >= 0; i--){
-    let n = parseInt(s[i],10);
-    if(alt){ n *= 2; if(n > 9) n -= 9; }
-    sum += n;
-    alt = !alt;
-  }
-  return sum % 10 === 0;
-}
-function expFuture(yyyyMM){
-  if(!yyyyMM || !/^\d{4}-\d{2}$/.test(yyyyMM)) return false;
-  const [y,m] = yyyyMM.split('-').map(Number);
-  const exp = new Date(y, m-1, 1);
-  const now = new Date();
-  // válido si fin de mes de expiración es posterior a hoy
-  const endOfExp = new Date(y, m, 0, 23,59,59);
-  return endOfExp >= now;
-}
-
-// Formateo amigable del número (xxxx xxxx xxxx xxxx)
-const numeroTarjeta = document.getElementById('numeroTarjeta');
-numeroTarjeta.addEventListener('input', ()=>{
-  const raw = onlyDigits(numeroTarjeta.value).slice(0,16);
-  numeroTarjeta.value = raw.replace(/(\d{4})(?=\d)/g, '$1 ');
-});
-
-// ======= Pago =======
-const cvv = document.getElementById('cvv');
-const fechaExp = document.getElementById('fechaExp');
-const confirmarBtn = document.getElementById('confirmarPago');
-const cancelarBtn = document.getElementById('cancelarBtn');
-const mensajePago = document.getElementById('mensajePago');
-const postPago = document.getElementById('postPago');
-
-function setMsg(text, ok){
-  mensajePago.textContent = text;
-  mensajePago.className = ok ? 'success' : 'error';
-}
-
-confirmarBtn.addEventListener('click', () => {
-  const num = numeroTarjeta.value.trim();
-  const cvvVal = cvv.value.trim();
-  const fecha = fechaExp.value.trim();
-
-  // Validaciones
-  if(!num || !cvvVal || !fecha){
-    setMsg("Completa todos los campos", false);
+function cargarBoleta() {
+  const content = document.getElementById('content');
+  const pago = JSON.parse(localStorage.getItem('pagoCompletado') || 'null');
+  
+  if (!pago) {
+    content.innerHTML = '<div class="no-boleta"><p>No hay una boleta disponible</p><a href="B6_ListaProducto.html">Ver productos</a></div>';
     return;
   }
-  if(!(cvvVal.length>=3 && cvvVal.length<=4 && /^\d+$/.test(cvvVal))){
-    setMsg("CVV inválido", false);
-    return;
-  }
-  if(!expFuture(fecha)){
-    setMsg("La tarjeta está vencida", false);
-    return;
-  }
-
-  // Regla demo que siempre aprueba:
-  const demoOk = (onlyDigits(num) === '1234567890123456' && cvvVal === '123');
-
-  // Luhn para resto de casos
-  const luhnValid = luhnOk(num);
-
-  if(!(demoOk || luhnValid)){
-    setMsg("Pago rechazado ❌ Datos de tarjeta inválidos", false);
-    return;
-  }
-
-  // Crear pedido desde carrito
-  const order = crearPedidoDesdeCarrito("cliente3@example.com");
-  if(!order){
-    setMsg("No tienes productos en el carrito ❌", false);
-    return;
-  }
-
-  setMsg(`Pago aprobado ✔️ Pedido Nº ${order.id}`, true);
-  postPago.style.display = 'flex';
-  postPago.innerHTML = `
-    <a href="B22_Boleta.html">Ver boleta</a>
-    <a href="B25_Estado_Pedido.html">Ver estado</a>
+  
+  const usuario = JSON.parse(localStorage.getItem('usuarioFB') || '{}');
+  const numeroBoleta = generarNumeroBoleta();
+  const metodosNombre = { 'tarjeta': 'Tarjeta de Crédito', 'transferencia': 'Transferencia Bancaria', 'webpay': 'Webpay Plus' };
+  const subtotal = pago.total - 2500;
+  const envio = 2500;
+  
+  content.innerHTML = `
+    <div class="boleta">
+      <div class="boleta-header">
+        <div class="logo">🥗</div>
+        <h2>FRESH BOWL</h2>
+        <div class="subtitle">Boleta Electrónica</div>
+      </div>
+      <div class="boleta-body">
+        <div class="boleta-info">
+          <div class="info-item"><div class="label">Nº Boleta</div><div class="value">${numeroBoleta}</div></div>
+          <div class="info-item"><div class="label">Fecha</div><div class="value">${fmtFecha(pago.fecha)}</div></div>
+          <div class="info-item"><div class="label">Cliente</div><div class="value">${usuario.nombre || 'Cliente'}</div></div>
+          <div class="info-item"><div class="label">Método de Pago</div><div class="value">${metodosNombre[pago.metodo] || pago.metodo}</div></div>
+        </div>
+        <div class="boleta-items">
+          <h4>Detalle de Compra</h4>
+          <div class="item-row"><span class="item-name">Productos Fresh Bowl</span><span class="item-qty">-</span><span class="item-price">${fmtCLP(subtotal)}</span></div>
+        </div>
+        <div class="boleta-totals">
+          <div class="total-row"><span>Subtotal</span><span>${fmtCLP(subtotal)}</span></div>
+          <div class="total-row"><span>Envío</span><span>${fmtCLP(envio)}</span></div>
+          <div class="total-row"><span>IVA (19%)</span><span>${fmtCLP(Math.round(pago.total * 0.19))}</span></div>
+          <div class="total-row final"><span>TOTAL</span><span>${fmtCLP(pago.total)}</span></div>
+        </div>
+        <div class="boleta-footer">
+          <div class="gracias">¡Gracias por tu compra!</div>
+          <div class="codigo">Código: ${pago.pedido_id ? pago.pedido_id.slice(-12).toUpperCase() : numeroBoleta}</div>
+        </div>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn btn-primary" onclick="window.print()">🖨️ Imprimir</button>
+      <a href="B25_seguimiento_pedido.html" class="btn btn-outline">📍 Seguir pedido</a>
+    </div>
+    <div class="links"><a href="index.html">← Volver al inicio</a></div>
   `;
-});
-
-cancelarBtn.addEventListener('click', () => {
-  // No borro pedidos; solo limpio carrito si existía para simular cancelación
-  const hadCart = Object.keys(getCart()).length > 0;
-  if(hadCart) clearCart();
-  setMsg("Pago cancelado ❌", false);
-  postPago.style.display = 'none';
-  postPago.innerHTML = '';
-});
+}
+cargarBoleta();
 </script>
-
 </body>
 </html>

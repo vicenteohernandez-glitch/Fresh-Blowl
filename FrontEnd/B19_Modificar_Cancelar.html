@@ -2,202 +2,273 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>B19: Modificar Pedido</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
+<title>Modificar/Cancelar Pedido - Fresh Bowl</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
+* { box-sizing: border-box; }
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
-  background: url('https://images.unsplash.com/photo-1603046891445-122b98fbe106') no-repeat center center fixed;
-  background-size: cover;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  min-height: 100vh;
+  padding: 20px;
 }
-.container {
-  background-color: rgba(255,255,255,0.95);
-  padding: 30px;
+header {
+  background: white;
+  padding: 15px 30px;
   border-radius: 12px;
-  max-width: 500px;
-  width: 100%;
-  text-align: center;
-  box-shadow: 0px 4px 15px rgba(0,0,0,0.3);
+  margin-bottom: 20px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
-select, button {
-  width: 100%;
-  padding: 10px;
-  margin-top: 10px;
+header h1 { color: #2e7d32; margin: 0; font-size: 1.4em; }
+header a { color: #27ae60; text-decoration: none; font-weight: 500; }
+
+.container { max-width: 600px; margin: 0 auto; }
+
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 25px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
-button {
-  background-color: #27ae60;
-  color: white;
+
+.card h3 { margin-top: 0; color: #2e7d32; }
+
+.pedido-item {
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 15px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.pedido-item:hover { border-color: #27ae60; }
+.pedido-item.selected { border-color: #2e7d32; background: #e8f5e9; }
+
+.pedido-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.pedido-id { font-weight: bold; color: #2e7d32; }
+.pedido-estado {
+  padding: 4px 10px;
+  border-radius: 15px;
+  font-size: 0.85em;
+  font-weight: 500;
+}
+.estado-pendiente { background: #fff3e0; color: #ef6c00; }
+.estado-preparacion { background: #e3f2fd; color: #1976d2; }
+.estado-listo { background: #e8f5e9; color: #2e7d32; }
+.estado-enviado { background: #f3e5f5; color: #7b1fa2; }
+.estado-entregado { background: #e0e0e0; color: #616161; }
+.estado-cancelado { background: #ffebee; color: #c62828; }
+
+.pedido-info { font-size: 0.9em; color: #666; }
+.pedido-total { font-weight: bold; margin-top: 8px; }
+
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+.btn {
+  flex: 1;
+  padding: 14px;
   border: none;
-  border-radius: 5px;
+  border-radius: 10px;
+  font-size: 1em;
+  font-weight: bold;
   cursor: pointer;
 }
-button:hover { background-color: #2ecc71; }
-.success { color: green; margin-top: 10px; font-weight: bold; }
-.error { color: red; margin-top: 10px; font-weight: bold; }
-a { display:block; margin-top:15px; font-weight:bold; color:#27ae60; text-decoration:none; }
-a:hover{ text-decoration:underline; }
-.small { font-size: 12px; color:#666; margin-top:4px; }
+.btn-danger { background: #c62828; color: white; }
+.btn-danger:hover { background: #b71c1c; }
+.btn-danger:disabled { background: #ccc; cursor: not-allowed; }
+
+.mensaje {
+  text-align: center;
+  padding: 12px;
+  border-radius: 8px;
+  margin-top: 15px;
+  display: none;
+}
+.mensaje.error { display: block; background: #ffebee; color: #c62828; }
+.mensaje.success { display: block; background: #e8f5e9; color: #2e7d32; }
+
+.empty {
+  text-align: center;
+  padding: 40px;
+  color: #999;
+}
+.empty .icon { font-size: 3em; margin-bottom: 10px; }
+
+.nota {
+  background: #fff3e0;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 0.9em;
+  color: #e65100;
+  margin-top: 15px;
+}
 </style>
 </head>
 <body>
+<header>
+  <h1>🥗 Fresh Bowl</h1>
+  <a href="B11_Historial_Pedidos.html">← Historial</a>
+</header>
+
 <div class="container">
-  <h3>Modificar Pedido</h3>
-
-  <!-- Selección de pedido a modificar -->
-  <select id="pedidoId">
-    <option value="">Seleccionar pedido (ID)</option>
-    <!-- Se completa con localStorage.orders -->
-  </select>
-  <div id="hint" class="small"></div>
-
-  <!-- Nueva ensalada -->
-  <select id="nuevoProducto">
-    <option value="">Seleccionar nueva ensalada</option>
-    <option value="cesar">César</option>
-    <option value="mixta">Mixta</option>
-    <option value="vegana">Vegana</option>
-  </select>
-
-  <button id="modificarBtn">Guardar Cambios</button>
-  <p id="mensaje"></p>
-
-  <a href="index.html">Volver al inicio</a>
+  <div class="card">
+    <h3>📝 Modificar o Cancelar Pedido</h3>
+    <p>Selecciona un pedido para cancelarlo. Solo puedes cancelar pedidos en estado <strong>Pendiente</strong> o <strong>Preparación</strong>.</p>
+    
+    <div id="pedidos-list">
+      <div class="empty">
+        <div class="icon">📦</div>
+        <p>Cargando pedidos...</p>
+      </div>
+    </div>
+    
+    <div class="actions">
+      <button class="btn btn-danger" id="btn-cancelar" disabled>❌ Cancelar Pedido</button>
+    </div>
+    
+    <div class="mensaje" id="mensaje"></div>
+    
+    <div class="nota">
+      ⚠️ <strong>Nota:</strong> Los pedidos en estado "Enviado" o "Entregado" no pueden ser cancelados.
+    </div>
+  </div>
 </div>
 
+<script src="api.js"></script>
 <script>
-// -------- Utilidades --------
-function getOrders(){ try { return JSON.parse(localStorage.getItem('orders')||'[]'); } catch { return []; } }
-function setOrders(arr){ localStorage.setItem('orders', JSON.stringify(arr)); }
-function fmtCLP(n){ return '$' + Number(n||0).toLocaleString('es-CL'); }
+const usuario = JSON.parse(localStorage.getItem("usuarioFB") || "null");
+let pedidoSeleccionado = null;
 
-// Mapeo simple de productos para la modificación
-const PRODUCT_MAP = {
-  cesar:  { name: 'Ensalada César',  price: 12000 },
-  mixta:  { name: 'Ensalada Mixta',  price: 12900 }, // pero no permitiremos por “agotado”
-  vegana: { name: 'Ensalada Vegana', price: 13500 }
-};
+// Estados que permiten cancelación
+const CANCELABLES = ['pendiente', 'preparacion', 'preparación'];
 
-// Estados que permitimos modificar (evita editar pedidos ya enviados/entregados)
-const EDITABLE_STATES = new Set(['Pagado','Preparación','Preparacion','Listo']);
+function getEstadoClass(estado) {
+  const e = (estado || '').toLowerCase();
+  if (e.includes('pendiente')) return 'estado-pendiente';
+  if (e.includes('preparac')) return 'estado-preparacion';
+  if (e.includes('listo')) return 'estado-listo';
+  if (e.includes('enviado') || e.includes('camino')) return 'estado-enviado';
+  if (e.includes('entregado')) return 'estado-entregado';
+  if (e.includes('cancelado')) return 'estado-cancelado';
+  return '';
+}
 
-// -------- Cargar lista de pedidos --------
-const pedidoSelect = document.getElementById('pedidoId');
-const mensaje = document.getElementById('mensaje');
-const hint = document.getElementById('hint');
+function formatFecha(fecha) {
+  return new Date(fecha).toLocaleDateString('es-CL', {
+    day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+  });
+}
 
-function loadPedidos(){
-  const orders = getOrders()
-    .slice()
-    .sort((a,b)=> new Date(b.dateISO||0) - new Date(a.dateISO||0));
+function formatCLP(n) {
+  return '$' + Number(n || 0).toLocaleString('es-CL');
+}
 
-  pedidoSelect.innerHTML = '<option value="">Seleccionar pedido (ID)</option>';
-
-  if(!orders.length){
-    hint.textContent = 'No hay pedidos en el sistema. Crea uno desde B18.';
+async function cargarPedidos() {
+  const container = document.getElementById('pedidos-list');
+  
+  if (!usuario || !usuario._id) {
+    container.innerHTML = '<div class="empty"><div class="icon">🔒</div><p>Debes iniciar sesión</p><a href="B4_Inicio_Sesion.html">Iniciar sesión</a></div>';
     return;
   }
-
-  let noEditableCount = 0;
-  orders.forEach(o=>{
-    const opt = document.createElement('option');
-    const estado = (o.estado||'').toString();
-    const editable = EDITABLE_STATES.has(estado);
-    opt.value = o.id;
-    opt.textContent = `${o.id} — ${estado} — ${fmtCLP(o.total)} — ${new Date(o.dateISO||Date.now()).toLocaleDateString('es-CL')}`;
-    if(!editable){
-      opt.disabled = true;
-      noEditableCount++;
-      opt.textContent += ' (no editable)';
+  
+  try {
+    const pedidos = await API.getHistorialPedidos(usuario._id);
+    
+    if (!pedidos || pedidos.length === 0) {
+      container.innerHTML = '<div class="empty"><div class="icon">📭</div><p>No tienes pedidos</p></div>';
+      return;
     }
-    pedidoSelect.appendChild(opt);
-  });
-
-  if(noEditableCount && noEditableCount === orders.length){
-    hint.textContent = 'Todos los pedidos están en estado no editable.';
-  } else {
-    hint.textContent = 'Solo se pueden modificar pedidos en estado: Pagado / Preparación / Listo.';
+    
+    // Ordenar por fecha (más recientes primero)
+    pedidos.sort((a, b) => new Date(b.fecha_creacion || 0) - new Date(a.fecha_creacion || 0));
+    
+    container.innerHTML = pedidos.map(p => {
+      const estado = p.estado || 'pendiente';
+      const esCancelable = CANCELABLES.includes(estado.toLowerCase());
+      
+      return `
+        <div class="pedido-item ${esCancelable ? '' : 'disabled'}" 
+             data-id="${p._id}" 
+             data-cancelable="${esCancelable}"
+             onclick="seleccionarPedido(this)">
+          <div class="pedido-header">
+            <span class="pedido-id">#${(p._id || '').slice(-8).toUpperCase()}</span>
+            <span class="pedido-estado ${getEstadoClass(estado)}">${estado}</span>
+          </div>
+          <div class="pedido-info">
+            📅 ${formatFecha(p.fecha_creacion)}
+          </div>
+          <div class="pedido-total">
+            Total: ${formatCLP(p.total)}
+          </div>
+        </div>
+      `;
+    }).join('');
+    
+  } catch (error) {
+    console.error("Error:", error);
+    container.innerHTML = '<div class="empty"><div class="icon">⚠️</div><p>Error al cargar pedidos</p></div>';
   }
 }
 
-loadPedidos();
-
-// -------- Acción: Modificar --------
-document.getElementById('modificarBtn').addEventListener('click', () => {
-  const orderId = pedidoSelect.value;
-  const prodKey = document.getElementById('nuevoProducto').value;
-
-  if(!orderId){
-    mensaje.textContent = 'Seleccione un pedido válido ❌';
-    mensaje.className = 'error';
-    return;
-  }
-  if(!prodKey){
-    mensaje.textContent = 'Seleccione una ensalada para modificar ❌';
-    mensaje.className = 'error';
-    return;
-  }
-  if(prodKey === 'mixta'){
-    mensaje.textContent = 'Ingredientes de “Mixta” agotados, no se puede actualizar ❌';
-    mensaje.className = 'error';
-    return;
-  }
-
-  const prod = PRODUCT_MAP[prodKey];
-  if(!prod){
-    mensaje.textContent = 'Producto inválido ❌';
-    mensaje.className = 'error';
-    return;
-  }
-
-  const orders = getOrders();
-  const idx = orders.findIndex(o=> String(o.id) === String(orderId));
-  if(idx === -1){
-    mensaje.textContent = 'Pedido no encontrado ❌';
-    mensaje.className = 'error';
-    return;
-  }
-
-  const estado = (orders[idx].estado||'').toString();
-  if(!EDITABLE_STATES.has(estado)){
-    mensaje.textContent = `El pedido no es editable en estado: ${estado} ❌`;
-    mensaje.className = 'error';
-    return;
-  }
-
-  // Modificamos el primer item (o creamos si no existiera)
-  const items = Array.isArray(orders[idx].items) ? orders[idx].items : [];
-  if(items.length){
-    items[0] = {
-      id:   prodKey,
-      name: prod.name,
-      qty:  1,
-      price: prod.price
-    };
+function seleccionarPedido(el) {
+  const cancelable = el.dataset.cancelable === 'true';
+  
+  // Quitar selección anterior
+  document.querySelectorAll('.pedido-item').forEach(p => p.classList.remove('selected'));
+  
+  if (cancelable) {
+    el.classList.add('selected');
+    pedidoSeleccionado = el.dataset.id;
+    document.getElementById('btn-cancelar').disabled = false;
   } else {
-    items.push({ id: prodKey, name: prod.name, qty: 1, price: prod.price });
+    pedidoSeleccionado = null;
+    document.getElementById('btn-cancelar').disabled = true;
+    mostrarMensaje('Este pedido no puede ser cancelado', 'error');
   }
-  orders[idx].items = items;
+}
 
-  // Recalcular totales (subtotal + envío)
-  const subtotal = items.reduce((s,it)=> s + (Number(it.price)||0) * (Number(it.qty)||0), 0);
-  const shipping = 2500;
-  orders[idx].total = subtotal + shipping;
+function mostrarMensaje(texto, tipo) {
+  const msg = document.getElementById('mensaje');
+  msg.textContent = texto;
+  msg.className = 'mensaje ' + tipo;
+  setTimeout(() => msg.className = 'mensaje', 3000);
+}
 
-  // Guardar
-  setOrders(orders);
-
-  mensaje.textContent = `Pedido ${orderId} actualizado correctamente ✔️ Total: ${fmtCLP(orders[idx].total)}`;
-  mensaje.className = 'success';
-
-  // Refrescar opciones y mantener selección si sigue siendo válida
-  loadPedidos();
-  pedidoSelect.value = orderId;
+document.getElementById('btn-cancelar').addEventListener('click', async () => {
+  if (!pedidoSeleccionado) return;
+  
+  if (!confirm('¿Estás seguro de cancelar este pedido?')) return;
+  
+  try {
+    await API.actualizarPedido(pedidoSeleccionado, { estado: 'cancelado' });
+    mostrarMensaje('✅ Pedido cancelado correctamente', 'success');
+    
+    // Recargar lista
+    setTimeout(() => cargarPedidos(), 1000);
+    pedidoSeleccionado = null;
+    document.getElementById('btn-cancelar').disabled = true;
+    
+  } catch (error) {
+    console.error("Error:", error);
+    mostrarMensaje('Error al cancelar el pedido', 'error');
+  }
 });
+
+// Iniciar
+cargarPedidos();
 </script>
 </body>
 </html>

@@ -4,71 +4,451 @@
 <meta charset="UTF-8">
 <title>Pago - Fresh Bowl</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
-
 <style>
+* { box-sizing: border-box; }
 body {
-  font-family: "Poppins", sans-serif;
-  background:#f4fff5;
-  display:flex; justify-content:center; align-items:center;
-  height:100vh; margin:0;
+  margin: 0;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  min-height: 100vh;
+  padding: 20px;
+}
+.container {
+  max-width: 500px;
+  margin: 0 auto;
 }
 .card {
-  background:#fff; padding:25px; width:360px;
-  border-radius:15px; text-align:center;
-  box-shadow:0 5px 18px rgba(0,0,0,.1);
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
 }
-button {
-  width:100%; padding:12px; border-radius:8px;
-  background:#4caf50; border:none; color:#fff; font-weight:bold;
+h2 { color: #2e7d32; text-align: center; margin-bottom: 25px; }
+h3 { color: #333; margin-bottom: 15px; }
+
+.order-summary {
+  background: #f9f9f9;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 25px;
 }
-button:hover { background:#388e3c; }
-.res { text-align:left; margin-top:15px; }
-.line { display:flex; justify-content:space-between; margin-bottom:6px; }
-.total { font-size:1.2em; font-weight:bold; margin-top:10px; }
-.volver {
-  display:block; margin-top:12px;
-  color:#4CAF50; text-decoration:none; font-weight:bold;
+.order-id {
+  font-size: 0.9em;
+  color: #666;
+  margin-bottom: 10px;
+}
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+}
+.summary-row:last-child { border-bottom: none; }
+.summary-row.total {
+  font-weight: bold;
+  font-size: 1.2em;
+  color: #2e7d32;
+  border-top: 2px solid #2e7d32;
+  margin-top: 10px;
+  padding-top: 15px;
+}
+
+.payment-methods {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.payment-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.payment-option:hover { border-color: #27ae60; }
+.payment-option.selected {
+  border-color: #27ae60;
+  background: #e8f5e9;
+}
+.payment-option input { display: none; }
+.payment-option .icon { font-size: 1.5em; }
+.payment-option .info { flex: 1; }
+.payment-option .info .name { font-weight: bold; }
+.payment-option .info .desc { font-size: 0.85em; color: #666; }
+
+.card-form {
+  display: none;
+  padding: 20px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+.card-form.visible { display: block; }
+.form-row {
+  display: flex;
+  gap: 10px;
+}
+.form-group {
+  flex: 1;
+  margin-bottom: 15px;
+}
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+  color: #333;
+  font-size: 0.9em;
+}
+.form-group input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 1em;
+}
+.form-group input:focus {
+  outline: none;
+  border-color: #27ae60;
+}
+
+.btn {
+  width: 100%;
+  padding: 15px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.btn-primary {
+  background: #27ae60;
+  color: white;
+}
+.btn-primary:hover { background: #2ecc71; }
+.btn-primary:disabled { background: #ccc; cursor: not-allowed; }
+
+.message {
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 15px;
+  text-align: center;
+  display: none;
+}
+.message.success { background: #e8f5e9; color: #2e7d32; display: block; }
+.message.error { background: #ffebee; color: #c62828; display: block; }
+.message.processing { background: #e3f2fd; color: #1565c0; display: block; }
+
+.secure-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+  color: #666;
+  font-size: 0.85em;
+}
+
+.links {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 20px;
+}
+.links a {
+  color: #27ae60;
+  text-decoration: none;
+  font-weight: 500;
+}
+.links a:hover { text-decoration: underline; }
+
+.no-order {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+.no-order a {
+  display: inline-block;
+  margin-top: 15px;
+  background: #27ae60;
+  color: white;
+  padding: 12px 25px;
+  border-radius: 8px;
+  text-decoration: none;
 }
 </style>
 </head>
-
 <body>
-<div class="card">
-  <h3>Confirmar Pago</h3>
 
-  <div id="detalle" class="res"></div>
-  
-  <button onclick="procesarPago()">Pagar ahora ✅</button>
-  <a class="volver" href="index.html">⬅ Volver</a>
+<div class="container">
+  <div class="card">
+    <h2>💳 Pasarela de Pago</h2>
+    
+    <div id="content">
+      <!-- Contenido cargado dinámicamente -->
+    </div>
+  </div>
+
+  <div class="links">
+    <a href="B18_Crear_Pedido.html">← Volver al carrito</a>
+    <a href="index.html">Inicio</a>
+  </div>
 </div>
 
+<script src="api.js"></script>
 <script>
-function formato(n){ return n.toLocaleString("es-CL"); }
+let pedidoActual = null;
+let metodoPago = 'tarjeta';
 
-function cargarResumen(){
-  const cart = JSON.parse(localStorage.getItem("cart") || "{}");
-  const envio = JSON.parse(localStorage.getItem("fb_envio") || "{}");
-
-  let subtotal = 0;
-  for(const id in cart){ subtotal += cart[id].price * cart[id].qty; }
-
-  const shipping = envio?.costo || 0;
-  const total = subtotal + shipping;
-
-  let html = `<div class='line'><span>Subtotal:</span><b>$${formato(subtotal)}</b></div>`;
-  html += `<div class='line'><span>Envío (${envio.tipo || "N/A"}):</span><b>$${formato(shipping)}</b></div>`;
-  html += `<div class='total'>Total a pagar: $${formato(total)}</div>`;
-
-  document.getElementById("detalle").innerHTML = html;
+// Formatear precio
+function fmtCLP(n) {
+  return new Intl.NumberFormat('es-CL', {
+    style: 'currency',
+    currency: 'CLP',
+    maximumFractionDigits: 0
+  }).format(n);
 }
 
-function procesarPago(){
-  alert("Pago realizado con éxito ✅");
-  location.href = "B20_Confirmacion.html";
+// Cargar datos del pedido
+function cargarPedido() {
+  const content = document.getElementById('content');
+  
+  const pedidoStr = localStorage.getItem('pedidoActual');
+  if (!pedidoStr) {
+    content.innerHTML = `
+      <div class="no-order">
+        <p>No hay un pedido pendiente de pago</p>
+        <a href="B6_ListaProducto.html">Ver productos</a>
+      </div>
+    `;
+    return;
+  }
+  
+  pedidoActual = JSON.parse(pedidoStr);
+  
+  content.innerHTML = `
+    <div class="order-summary">
+      <div class="order-id">Pedido #${pedidoActual.id.slice(-8).toUpperCase()}</div>
+      <div class="summary-row">
+        <span>Productos (${pedidoActual.items})</span>
+        <span>Ver detalle</span>
+      </div>
+      <div class="summary-row total">
+        <span>Total a pagar</span>
+        <span>${fmtCLP(pedidoActual.total)}</span>
+      </div>
+    </div>
+
+    <h3>Método de pago</h3>
+    
+    <div class="payment-methods">
+      <label class="payment-option selected" data-method="tarjeta">
+        <input type="radio" name="metodo" value="tarjeta" checked>
+        <div class="icon">💳</div>
+        <div class="info">
+          <div class="name">Tarjeta de crédito/débito</div>
+          <div class="desc">Visa, Mastercard, American Express</div>
+        </div>
+      </label>
+      
+      <label class="payment-option" data-method="transferencia">
+        <input type="radio" name="metodo" value="transferencia">
+        <div class="icon">🏦</div>
+        <div class="info">
+          <div class="name">Transferencia bancaria</div>
+          <div class="desc">Banco Estado, Santander, BCI, etc.</div>
+        </div>
+      </label>
+      
+      <label class="payment-option" data-method="webpay">
+        <input type="radio" name="metodo" value="webpay">
+        <div class="icon">🔐</div>
+        <div class="info">
+          <div class="name">Webpay Plus</div>
+          <div class="desc">Pago seguro con Transbank</div>
+        </div>
+      </label>
+    </div>
+
+    <div class="card-form visible" id="cardForm">
+      <div class="form-group">
+        <label>Número de tarjeta</label>
+        <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19">
+      </div>
+      <div class="form-group">
+        <label>Nombre en la tarjeta</label>
+        <input type="text" id="cardName" placeholder="JUAN PÉREZ">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Vencimiento</label>
+          <input type="text" id="cardExpiry" placeholder="MM/AA" maxlength="5">
+        </div>
+        <div class="form-group">
+          <label>CVV</label>
+          <input type="text" id="cardCvv" placeholder="123" maxlength="4">
+        </div>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" id="btn-pagar">
+      Pagar ${fmtCLP(pedidoActual.total)}
+    </button>
+
+    <div id="mensaje" class="message"></div>
+
+    <div class="secure-note">
+      🔒 Pago 100% seguro con encriptación SSL
+    </div>
+  `;
+
+  // Event listeners
+  setupEventListeners();
 }
 
-cargarResumen();
+function setupEventListeners() {
+  // Cambiar método de pago
+  document.querySelectorAll('.payment-option').forEach(opt => {
+    opt.addEventListener('click', () => {
+      document.querySelectorAll('.payment-option').forEach(o => o.classList.remove('selected'));
+      opt.classList.add('selected');
+      metodoPago = opt.dataset.method;
+      
+      // Mostrar/ocultar formulario de tarjeta
+      const cardForm = document.getElementById('cardForm');
+      if (metodoPago === 'tarjeta') {
+        cardForm.classList.add('visible');
+      } else {
+        cardForm.classList.remove('visible');
+      }
+    });
+  });
+
+  // Formatear número de tarjeta
+  const cardNumber = document.getElementById('cardNumber');
+  if (cardNumber) {
+    cardNumber.addEventListener('input', (e) => {
+      let v = e.target.value.replace(/\D/g, '');
+      v = v.replace(/(\d{4})/g, '$1 ').trim();
+      e.target.value = v;
+    });
+  }
+
+  // Formatear vencimiento
+  const cardExpiry = document.getElementById('cardExpiry');
+  if (cardExpiry) {
+    cardExpiry.addEventListener('input', (e) => {
+      let v = e.target.value.replace(/\D/g, '');
+      if (v.length >= 2) {
+        v = v.slice(0, 2) + '/' + v.slice(2);
+      }
+      e.target.value = v;
+    });
+  }
+
+  // Procesar pago
+  document.getElementById('btn-pagar').addEventListener('click', procesarPago);
+}
+
+async function procesarPago() {
+  const btn = document.getElementById('btn-pagar');
+  const mensaje = document.getElementById('mensaje');
+  
+  // Validar datos de tarjeta si es necesario
+  if (metodoPago === 'tarjeta') {
+    const cardNumber = document.getElementById('cardNumber').value.replace(/\s/g, '');
+    const cardName = document.getElementById('cardName').value.trim();
+    const cardExpiry = document.getElementById('cardExpiry').value;
+    const cardCvv = document.getElementById('cardCvv').value;
+    
+    if (cardNumber.length < 16) {
+      mensaje.className = 'message error';
+      mensaje.textContent = 'Ingresa un número de tarjeta válido';
+      return;
+    }
+    if (!cardName) {
+      mensaje.className = 'message error';
+      mensaje.textContent = 'Ingresa el nombre en la tarjeta';
+      return;
+    }
+    if (cardExpiry.length < 5) {
+      mensaje.className = 'message error';
+      mensaje.textContent = 'Ingresa la fecha de vencimiento';
+      return;
+    }
+    if (cardCvv.length < 3) {
+      mensaje.className = 'message error';
+      mensaje.textContent = 'Ingresa el CVV de la tarjeta';
+      return;
+    }
+  }
+  
+  btn.disabled = true;
+  btn.textContent = 'Procesando...';
+  mensaje.className = 'message processing';
+  mensaje.textContent = 'Procesando tu pago de forma segura...';
+  
+  try {
+    // Simular procesamiento de pago (2 segundos)
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // Crear registro de pago
+    const pagoData = {
+      pedido_id: pedidoActual.id,
+      monto: pedidoActual.total,
+      metodo: metodoPago,
+      estado: 'aprobado',
+      fecha: new Date().toISOString()
+    };
+    
+    // Intentar registrar el pago en la API
+    try {
+      await API.crearPago(pagoData);
+    } catch (e) {
+      console.warn('No se pudo registrar pago en API:', e);
+    }
+    
+    // Actualizar estado del pedido
+    try {
+      await API.actualizarPedido(pedidoActual.id, { estado: 'pagado' });
+    } catch (e) {
+      console.warn('No se pudo actualizar pedido:', e);
+    }
+    
+    // Guardar datos para la boleta
+    localStorage.setItem('pagoCompletado', JSON.stringify({
+      pedido_id: pedidoActual.id,
+      total: pedidoActual.total,
+      metodo: metodoPago,
+      fecha: new Date().toISOString()
+    }));
+    
+    // Limpiar pedido actual
+    localStorage.removeItem('pedidoActual');
+    
+    mensaje.className = 'message success';
+    mensaje.textContent = '¡Pago aprobado! Redirigiendo...';
+    
+    setTimeout(() => {
+      window.location.href = 'B20_Confirmacion_Pago.html';
+    }, 1500);
+    
+  } catch (error) {
+    console.error('Error:', error);
+    mensaje.className = 'message error';
+    mensaje.textContent = 'Error al procesar el pago. Intenta de nuevo.';
+    btn.disabled = false;
+    btn.textContent = `Pagar ${fmtCLP(pedidoActual.total)}`;
+  }
+}
+
+// Iniciar
+cargarPedido();
 </script>
 </body>
 </html>

@@ -2,101 +2,343 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>B26: Notificación al Cliente</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
+<title>Notificaciones - Fresh Bowl</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-  body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080') no-repeat center center fixed;
-    background-size: cover;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-  }
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  min-height: 100vh;
+}
+header {
+  background: white;
+  padding: 15px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+header h1 { color: #2e7d32; margin: 0; font-size: 1.5em; }
+header nav a { color: #27ae60; text-decoration: none; margin-left: 20px; font-weight: 500; }
 
-  .container {
-    background-color: rgba(255,255,255,0.95);
-    padding: 30px;
-    border-radius: 12px;
-    text-align: center;
-    box-shadow: 0px 4px 15px rgba(0,0,0,0.3);
-    width: 360px;
-  }
+.container { max-width: 700px; margin: 0 auto; padding: 30px 20px; }
 
-  button {
-    background-color: #8e44ad;
-    color: white;
-    border: none;
-    padding: 12px;
-    width: 100%;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 15px;
-  }
-  button:hover { background-color: #9b59b6; }
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+.page-header h2 { color: #2e7d32; margin: 0; }
+.badge {
+  background: #27ae60;
+  color: white;
+  padding: 5px 12px;
+  border-radius: 15px;
+  font-size: 0.85em;
+}
 
-  .message {
-    margin-top: 15px;
-    font-weight: bold;
-    font-size: 16px;
-    opacity: 0;
-    transition: opacity 0.4s ease;
-  }
+.filters {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.filter-btn {
+  padding: 8px 16px;
+  border: 2px solid #ddd;
+  background: white;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.9em;
+}
+.filter-btn:hover { border-color: #27ae60; }
+.filter-btn.active { background: #27ae60; border-color: #27ae60; color: white; }
 
-  .success { color: #27ae60; }
-  .error { color: #c0392b; }
+.notifications { display: flex; flex-direction: column; gap: 12px; }
 
-  .loading {
-    margin-top: 12px;
-    font-style: italic;
-    font-size: 14px;
-    color: #555;
-  }
+.notification {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  display: flex;
+  gap: 15px;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+.notification:hover {
+  box-shadow: 0 4px 15px rgba(0,0,0,0.12);
+  transform: translateX(5px);
+}
+.notification.unread { border-left: 4px solid #27ae60; }
+.notification.read { opacity: 0.7; }
 
-  a { color: #8e44ad; margin-top: 15px; display: inline-block; text-decoration: none; }
-  a:hover { text-decoration: underline; }
+.notification .icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5em;
+  flex-shrink: 0;
+}
+.notification .icon.pedido { background: #e3f2fd; }
+.notification .icon.promo { background: #fff3e0; }
+.notification .icon.entrega { background: #e8f5e9; }
+.notification .icon.sistema { background: #f3e5f5; }
+
+.notification .content { flex: 1; }
+.notification .title { font-weight: bold; color: #333; margin-bottom: 5px; }
+.notification .message { font-size: 0.9em; color: #666; line-height: 1.4; }
+.notification .time { font-size: 0.8em; color: #999; margin-top: 8px; }
+
+.notification .actions {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+}
+.notification .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #27ae60;
+}
+.notification.read .dot { display: none; }
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
+  background: white;
+  border-radius: 12px;
+}
+.empty-state .icon { font-size: 3em; margin-bottom: 15px; }
+
+.actions-bar {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  justify-content: center;
+}
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9em;
+  cursor: pointer;
+}
+.btn-outline {
+  background: transparent;
+  border: 2px solid #27ae60;
+  color: #27ae60;
+}
+.btn-outline:hover { background: #e8f5e9; }
+
+.links { text-align: center; margin-top: 20px; }
+.links a { color: #27ae60; text-decoration: none; }
 </style>
 </head>
 <body>
+<header>
+  <h1>🥗 Fresh Bowl</h1>
+  <nav>
+    <a href="B6_ListaProducto.html">Productos</a>
+    <a href="B11_Historial_Pedidos.html">Pedidos</a>
+    <a href="index.html">Inicio</a>
+  </nav>
+</header>
 
 <div class="container">
-  <h3>Notificar al Cliente</h3>
-  <button id="enviarNoti">Enviar notificación</button>
-  
-  <p id="cargando" class="loading" style="display:none;">Enviando notificación...</p>
-  <p id="mensaje" class="message"></p>
+  <div class="page-header">
+    <h2>🔔 Notificaciones</h2>
+    <span class="badge" id="unread-count">0 nuevas</span>
+  </div>
 
-  <a href="index.html">Volver al inicio</a>
+  <div class="filters">
+    <button class="filter-btn active" data-filter="todas">Todas</button>
+    <button class="filter-btn" data-filter="pedido">Pedidos</button>
+    <button class="filter-btn" data-filter="promo">Promociones</button>
+    <button class="filter-btn" data-filter="entrega">Entregas</button>
+  </div>
+
+  <div class="notifications" id="notifications-list">
+    <!-- Notificaciones cargadas dinámicamente -->
+  </div>
+
+  <div class="actions-bar">
+    <button class="btn btn-outline" onclick="marcarTodasLeidas()">✓ Marcar todas como leídas</button>
+    <button class="btn btn-outline" onclick="generarNotificacion()">+ Simular notificación</button>
+  </div>
+
+  <div class="links">
+    <a href="index.html">← Volver al inicio</a>
+  </div>
 </div>
 
+<script src="api.js"></script>
 <script>
-document.getElementById('enviarNoti').addEventListener('click', () => {
-  const cargando = document.getElementById('cargando');
-  const mensaje = document.getElementById('mensaje');
+// Notificaciones de demo
+let notificaciones = [
+  {
+    id: 1,
+    tipo: 'pedido',
+    titulo: '¡Pedido confirmado!',
+    mensaje: 'Tu pedido #FB2024 ha sido confirmado y está siendo preparado con ingredientes frescos.',
+    tiempo: Date.now() - 300000, // hace 5 min
+    leida: false
+  },
+  {
+    id: 2,
+    tipo: 'promo',
+    titulo: '🎉 ¡20% de descuento!',
+    mensaje: 'Usa el código FRESH20 en tu próxima compra. Válido hasta el domingo.',
+    tiempo: Date.now() - 3600000, // hace 1 hora
+    leida: false
+  },
+  {
+    id: 3,
+    tipo: 'entrega',
+    titulo: 'Tu pedido está en camino',
+    mensaje: 'Carlos está llevando tu Fresh Bowl. Tiempo estimado: 15 minutos.',
+    tiempo: Date.now() - 7200000, // hace 2 horas
+    leida: true
+  },
+  {
+    id: 4,
+    tipo: 'sistema',
+    titulo: '¡Bienvenido a Fresh Bowl!',
+    mensaje: 'Gracias por unirte. Disfruta de ensaladas frescas y saludables.',
+    tiempo: Date.now() - 86400000, // hace 1 día
+    leida: true
+  },
+  {
+    id: 5,
+    tipo: 'pedido',
+    titulo: 'Pedido entregado ✅',
+    mensaje: 'Tu pedido #FB2023 ha sido entregado. ¡Esperamos que lo disfrutes!',
+    tiempo: Date.now() - 172800000, // hace 2 días
+    leida: true
+  }
+];
 
-  mensaje.style.opacity = 0;
-  mensaje.textContent = "";
+let filtroActual = 'todas';
 
-  cargando.style.display = "block";
+function tiempoRelativo(timestamp) {
+  const diff = Date.now() - timestamp;
+  const mins = Math.floor(diff / 60000);
+  const hours = Math.floor(diff / 3600000);
+  const days = Math.floor(diff / 86400000);
+  
+  if (mins < 1) return 'Ahora';
+  if (mins < 60) return `Hace ${mins} min`;
+  if (hours < 24) return `Hace ${hours}h`;
+  return `Hace ${days} día${days > 1 ? 's' : ''}`;
+}
 
-  setTimeout(() => {
-    cargando.style.display = "none";
+function getIcono(tipo) {
+  const iconos = { pedido: '📦', promo: '🎁', entrega: '🚚', sistema: '⚙️' };
+  return iconos[tipo] || '🔔';
+}
 
-    const exito = Math.random() > 0.1; // 90% éxito
-    if (exito) {
-      mensaje.textContent = "✅ Notificación enviada por correo y push";
-      mensaje.className = "message success";
-    } else {
-      mensaje.textContent = "❌ Error al enviar notificación. Inténtalo nuevamente.";
-      mensaje.className = "message error";
-    }
+function renderNotificaciones() {
+  const container = document.getElementById('notifications-list');
+  
+  let lista = notificaciones;
+  if (filtroActual !== 'todas') {
+    lista = notificaciones.filter(n => n.tipo === filtroActual);
+  }
+  
+  // Ordenar por tiempo (más recientes primero)
+  lista.sort((a, b) => b.tiempo - a.tiempo);
+  
+  const noLeidas = notificaciones.filter(n => !n.leida).length;
+  document.getElementById('unread-count').textContent = `${noLeidas} nueva${noLeidas !== 1 ? 's' : ''}`;
+  
+  if (lista.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="icon">🔔</div><p>No hay notificaciones</p></div>';
+    return;
+  }
+  
+  container.innerHTML = lista.map(n => `
+    <div class="notification ${n.leida ? 'read' : 'unread'}" onclick="marcarLeida(${n.id})">
+      <div class="icon ${n.tipo}">${getIcono(n.tipo)}</div>
+      <div class="content">
+        <div class="title">${n.titulo}</div>
+        <div class="message">${n.mensaje}</div>
+        <div class="time">${tiempoRelativo(n.tiempo)}</div>
+      </div>
+      <div class="actions">
+        <div class="dot"></div>
+      </div>
+    </div>
+  `).join('');
+}
 
-    mensaje.style.opacity = 1;
-  }, 1000);
+function marcarLeida(id) {
+  const notif = notificaciones.find(n => n.id === id);
+  if (notif) {
+    notif.leida = true;
+    renderNotificaciones();
+  }
+}
+
+function marcarTodasLeidas() {
+  notificaciones.forEach(n => n.leida = true);
+  renderNotificaciones();
+}
+
+function generarNotificacion() {
+  const tipos = ['pedido', 'promo', 'entrega'];
+  const mensajes = {
+    pedido: { titulo: '📦 Actualización de pedido', mensaje: 'Tu pedido está siendo preparado con los mejores ingredientes.' },
+    promo: { titulo: '🎉 ¡Oferta especial!', mensaje: 'Ensalada del día con 15% de descuento. ¡Solo por hoy!' },
+    entrega: { titulo: '🚚 Repartidor asignado', mensaje: 'María está en camino con tu pedido. Llegará pronto.' }
+  };
+  
+  const tipo = tipos[Math.floor(Math.random() * tipos.length)];
+  const nuevaNotif = {
+    id: Date.now(),
+    tipo: tipo,
+    titulo: mensajes[tipo].titulo,
+    mensaje: mensajes[tipo].mensaje,
+    tiempo: Date.now(),
+    leida: false
+  };
+  
+  notificaciones.unshift(nuevaNotif);
+  renderNotificaciones();
+  
+  // Notificación del navegador (si está permitido)
+  if (Notification.permission === 'granted') {
+    new Notification(nuevaNotif.titulo, { body: nuevaNotif.mensaje, icon: '🥗' });
+  }
+}
+
+// Filtros
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    filtroActual = btn.dataset.filter;
+    renderNotificaciones();
+  });
 });
-</script>
 
+// Solicitar permiso para notificaciones
+if ('Notification' in window && Notification.permission === 'default') {
+  Notification.requestPermission();
+}
+
+// Iniciar
+renderNotificaciones();
+</script>
 </body>
 </html>

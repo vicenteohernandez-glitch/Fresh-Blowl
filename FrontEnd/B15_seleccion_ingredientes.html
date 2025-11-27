@@ -134,28 +134,35 @@ function calc(){
 $$('input[type="checkbox"]').forEach(el => el.addEventListener('change', calc));
 calc();
 
-// Agregar al carrito SIN recargos
+// Agregar al carrito usando carritoFB
 $('#agregar').addEventListener('click', () => {
   const baseSel   = $$('input[id^="b_"]:checked').map(x => x.dataset.ingrediente);
   const extrasSel = $$('input[id^="e_"]:checked').map(x => x.dataset.ingrediente);
   const { total } = calc();
 
-  const nombreFinal = (RECETAS[baseNombre] ? `Personalizada ${baseNombre}` : 'Bowl personalizado')
-                    + (baseSel.length || extrasSel.length ? ` (${[...baseSel, ...extrasSel].join(', ')})` : '');
+  const nombreFinal = (RECETAS[baseNombre] ? baseNombre : 'Bowl personalizado')
+                    + (extrasSel.length ? ` + ${extrasSel.join(', ')}` : '');
 
-  const sku = (qsSku ? (qsSku + '-CUST-') : 'CUSTOM_') + Date.now();
+  const sku = 'CUSTOM_' + Date.now();
 
-  // aseguramos catálogo y carrito del app.js
-  if (typeof FB !== 'undefined') {
-    FB.PRODUCTOS.push({ sku, nombre: nombreFinal, precio: total, img: baseImg, desc: 'Bowl personalizado' });
-  }
-  if (typeof CART !== 'undefined') {
-    CART.add(sku, 1); // agrega 1 unidad con el precio FINAL que acabamos de calcular
-  }
+  // Agregar al carritoFB (formato array)
+  let cart = JSON.parse(localStorage.getItem('carritoFB')) || [];
+  cart.push({
+    sku: sku,
+    nombre: nombreFinal,
+    precio: total,
+    cantidad: 1,
+    img: baseImg,
+    ingredientes: [...baseSel, ...extrasSel]
+  });
+  localStorage.setItem('carritoFB', JSON.stringify(cart));
 
   const ok = $('#ok');
   ok.style.display = 'block';
-  setTimeout(() => ok.style.display = 'none', 1200);
+  setTimeout(() => {
+    ok.style.display = 'none';
+    location.href = 'index.html';
+  }, 1200);
 });
 </script>
 </body>

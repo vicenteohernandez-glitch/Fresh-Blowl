@@ -64,7 +64,7 @@
     if (data && data._id) {
       // Guardar usuario en localStorage
       localStorage.setItem("usuarioFB", JSON.stringify({
-        id: data._id,
+        _id: data._id,
         nombre: data.nombre,
         email: data.email,
         telefono: data.telefono || "",
@@ -258,6 +258,11 @@
     });
   }
 
+  // Alias para compatibilidad
+  async function actualizarPedido(pedidoId, datos) {
+    return updatePedido(pedidoId, datos);
+  }
+
   async function cancelarPedido(pedidoId) {
     return await safeFetch(`${API_BASE}/pedidos/${pedidoId}`, {
       method: "DELETE",
@@ -303,6 +308,7 @@
     loginUsuario,
     getUsuario,
     updateUsuario,
+    actualizarUsuario: updateUsuario,
     deleteUsuario,
     getUsuarioActual,
     logout,
@@ -331,6 +337,7 @@
     getPedido,
     getHistorialPedidos,
     updatePedido,
+    actualizarPedido,
     cancelarPedido,
     
     // Pagos

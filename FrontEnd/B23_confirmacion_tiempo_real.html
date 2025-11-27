@@ -2,175 +2,264 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>B23: Confirmación en Tiempo Real</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
+<title>Confirmación en Tiempo Real - Fresh Bowl</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-  body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: url('https://images.unsplash.com/photo-1611765083444-a1d1bbf8d92a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080') no-repeat center center fixed;
-    background-size: cover;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-  }
-  .container {
-    background-color: rgba(255,255,255,0.95);
-    padding: 30px;
-    border-radius: 10px;
-    max-width: 420px;
-    width: 100%;
-    text-align: center;
-    box-shadow: 0px 4px 15px rgba(0,0,0,0.3);
-  }
-  button {
-    background-color: #27ae60;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    width: 100%;
-    font-size: 16px;
-  }
-  button:hover { background-color: #2ecc71; }
-  .status { margin-top: 14px; font-size: 1em; font-weight: bold; }
-  .success { color: #2e7d32; }
-  .pending { color: #f39c12; }
-  .error   { color: #e53935; }
-  .links { margin-top:12px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap }
-  .links a { display:inline-block; padding:8px 12px; border-radius:8px; border:2px solid #27ae60; color:#27ae60; text-decoration:none; font-weight:700 }
-  .links a:hover { background:#27ae60; color:#fff }
-  a.back { display:inline-block; margin-top: 15px; color: #27ae60; text-decoration: none; font-weight: bold; }
-  a.back:hover { text-decoration: underline; }
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.container {
+  background: white;
+  padding: 40px;
+  border-radius: 20px;
+  max-width: 450px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+}
+
+h2 { color: #2e7d32; margin-bottom: 10px; }
+.subtitle { color: #666; margin-bottom: 30px; }
+
+.status-container {
+  background: #f5f5f5;
+  border-radius: 15px;
+  padding: 30px;
+  margin: 20px 0;
+}
+
+.status-icon {
+  font-size: 4em;
+  margin-bottom: 15px;
+}
+
+.status-text {
+  font-size: 1.1em;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.status-detail {
+  font-size: 0.9em;
+  color: #666;
+}
+
+/* Estados */
+.status-pending .status-container { background: #fff3e0; }
+.status-pending .status-icon::before { content: '⏳'; }
+.status-pending .status-text { color: #ef6c00; }
+
+.status-processing .status-container { background: #e3f2fd; }
+.status-processing .status-icon::before { content: '🔄'; }
+.status-processing .status-text { color: #1976d2; }
+
+.status-success .status-container { background: #e8f5e9; }
+.status-success .status-icon::before { content: '✅'; }
+.status-success .status-text { color: #2e7d32; }
+
+.status-error .status-container { background: #ffebee; }
+.status-error .status-icon::before { content: '❌'; }
+.status-error .status-text { color: #c62828; }
+
+/* Progress bar */
+.progress-bar {
+  width: 100%;
+  height: 6px;
+  background: #e0e0e0;
+  border-radius: 3px;
+  margin: 20px 0;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #27ae60, #2ecc71);
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+.btn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  font-size: 1em;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 10px;
+}
+.btn-primary {
+  background: linear-gradient(135deg, #27ae60, #2ecc71);
+  color: white;
+}
+.btn-primary:hover { opacity: 0.9; }
+.btn-primary:disabled { background: #ccc; cursor: not-allowed; }
+
+.btn-secondary {
+  background: #f5f5f5;
+  color: #333;
+}
+
+.links {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+.links a {
+  flex: 1;
+  min-width: 100px;
+  padding: 12px;
+  background: #e8f5e9;
+  color: #2e7d32;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 500;
+  text-align: center;
+}
+.links a:hover { background: #c8e6c9; }
+
+.order-summary {
+  background: #f9f9f9;
+  border-radius: 10px;
+  padding: 15px;
+  margin-top: 20px;
+  text-align: left;
+  display: none;
+}
+.order-summary h4 { margin: 0 0 10px; color: #2e7d32; }
+.order-summary .row {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 0;
+  border-bottom: 1px solid #eee;
+}
+.order-summary .total { font-weight: bold; border-bottom: none; }
 </style>
 </head>
 <body>
 
-<div class="container">
-  <h3>Confirmación en Tiempo Real</h3>
-  <button id="confirmarPago">Realizar Pago</button>
-  <p id="estado" class="status"></p>
-  <div id="postPago" class="links" style="display:none"></div>
-  <a href="index.html" class="back">Volver al inicio</a>
+<div class="container status-pending" id="main-container">
+  <h2>🔔 Confirmación en Tiempo Real</h2>
+  <p class="subtitle">Verificando el estado de tu pago</p>
+  
+  <div class="status-container">
+    <div class="status-icon"></div>
+    <div class="status-text" id="status-text">Conectando con la pasarela...</div>
+    <div class="status-detail" id="status-detail">Por favor espera un momento</div>
+  </div>
+  
+  <div class="progress-bar">
+    <div class="progress-fill" id="progress" style="width: 0%"></div>
+  </div>
+  
+  <div class="order-summary" id="order-summary">
+    <h4>📋 Resumen del pedido</h4>
+    <div id="order-items"></div>
+  </div>
+  
+  <div class="links" id="post-links" style="display: none;">
+    <a href="B22_boleta_digital.html">📄 Ver Boleta</a>
+    <a href="B25_seguimiento_pedido.html">📍 Seguimiento</a>
+    <a href="B11_Historial_Pedidos.html">📋 Historial</a>
+  </div>
+  
+  <button class="btn btn-secondary" onclick="location.href='index.html'" style="margin-top: 20px;">
+    ← Volver al inicio
+  </button>
 </div>
 
+<script src="api.js"></script>
 <script>
-// ===== Utilidades comunes =====
-function getCart(){ return JSON.parse(localStorage.getItem('cart')||"{}"); }
-function clearCart(){ localStorage.removeItem('cart'); }
-function getOrders(){ return JSON.parse(localStorage.getItem('orders')||"[]"); }
-function setOrders(arr){ localStorage.setItem('orders', JSON.stringify(arr)); }
-function totalDesdeCarrito(){
-  const cart = getCart();
-  let subtotal = 0, items = 0;
-  Object.keys(cart).forEach(k=>{ subtotal += cart[k].price*cart[k].qty; items += cart[k].qty; });
-  const shipping = items>0 ? 2500 : 0;
-  return { subtotal, shipping, total: subtotal + shipping, items };
-}
-function crearPedidoDesdeCarrito(email="cliente3@example.com"){
-  const cart = getCart();
-  const keys = Object.keys(cart);
-  if(keys.length === 0) return null;
-  const items = keys.map(id => ({
-    id,
-    name: cart[id].name || id.replaceAll('_',' '),
-    qty: cart[id].qty,
-    price: cart[id].price
-  }));
-  const t = totalDesdeCarrito();
-  const order = {
-    id: "ORD-" + Math.floor(Math.random()*90000 + 10000),
-    dateISO: new Date().toISOString(),
-    email,
-    items,
-    total: t.total,
-    estado: "Pagado",
-    gatewayStatus: "confirmed"
-  };
-  const orders = getOrders(); orders.push(order); setOrders(orders);
-  clearCart();
-  return order;
-}
-function confirmarUltimoPedidoAbierto(){
-  const orders = getOrders().slice().sort((a,b)=> new Date(b.dateISO||0) - new Date(a.dateISO||0));
-  if(!orders.length) return null;
-  const idx = orders.findIndex(o => !['Enviado','Entregado'].includes((o.estado||'').toString()));
-  const i = idx === -1 ? 0 : idx;
-  orders[i].gatewayStatus = "confirmed";
-  if(!orders[i].estado) orders[i].estado = "Pagado";
-  setOrders(orders);
-  return orders[i];
+const container = document.getElementById('main-container');
+const statusText = document.getElementById('status-text');
+const statusDetail = document.getElementById('status-detail');
+const progress = document.getElementById('progress');
+const postLinks = document.getElementById('post-links');
+const orderSummary = document.getElementById('order-summary');
+
+// Obtener datos del pedido/pago
+const ultimoPedido = JSON.parse(localStorage.getItem('ultimoPedidoFB') || 'null');
+const ultimoPago = JSON.parse(localStorage.getItem('ultimoPagoFB') || 'null');
+
+function setStatus(type, text, detail) {
+  container.className = 'container status-' + type;
+  statusText.textContent = text;
+  statusDetail.textContent = detail;
 }
 
-// ===== UI progreso simulado (tipo “tiempo real”) =====
-const btn = document.getElementById('confirmarPago');
-const estado = document.getElementById('estado');
-const postPago = document.getElementById('postPago');
-
-function setPending(msg){
-  estado.textContent = msg;
-  estado.className = "status pending";
-  postPago.style.display = 'none';
-  postPago.innerHTML = '';
+function formatCLP(n) {
+  return '$' + Number(n || 0).toLocaleString('es-CL');
 }
-function setSuccess(msg, orderId){
-  estado.textContent = msg;
-  estado.className = "status success";
-  postPago.style.display = 'flex';
-  postPago.innerHTML = `
-    <a href="B22_Boleta.html">Ver boleta</a>
-    <a href="B25_Estado_Pedido.html">Ver estado</a>
-    <a href="B11_Historial.html">Historial</a>
+
+function mostrarResumen(pedido) {
+  if (!pedido) return;
+  
+  const itemsHtml = (pedido.items || []).map(item => `
+    <div class="row">
+      <span>${item.nombre || item.sku} x${item.cantidad}</span>
+      <span>${formatCLP(item.precio * item.cantidad)}</span>
+    </div>
+  `).join('');
+  
+  document.getElementById('order-items').innerHTML = itemsHtml + `
+    <div class="row total">
+      <span>Total</span>
+      <span>${formatCLP(pedido.total)}</span>
+    </div>
   `;
-}
-function setError(msg){
-  estado.textContent = msg;
-  estado.className = "status error";
-  postPago.style.display = 'none';
-  postPago.innerHTML = '';
+  
+  orderSummary.style.display = 'block';
 }
 
-btn.addEventListener('click', () => {
-  // Paso 1: iniciamos “stream” de estados
-  setPending("Conectando con la pasarela…");
-  let tick = 0;
-  const timer = setInterval(()=>{
-    tick++;
-    if(tick === 1){
-      setPending("Procesando pago…");
-    } else if(tick === 2){
-      setPending("Validando con el banco…");
-    } else if(tick === 3){
-      // Decisión simulada
-      const r = Math.random(); // < 0.6 aprueba, si no queda pendiente
-      if(r < 0.6){
-        clearInterval(timer);
-        // Confirmado: crear desde carrito o confirmar pedido abierto
-        const cartInfo = totalDesdeCarrito();
-        let order = null;
-        if(cartInfo.items > 0){
-          order = crearPedidoDesdeCarrito("cliente3@example.com");
-        } else {
-          order = confirmarUltimoPedidoAbierto();
-        }
-        if(order){
-          setSuccess(`Pago confirmado ✔️ — Pedido Nº ${order.id}`, order.id);
-        } else {
-          setSuccess("Pago confirmado ✔️", null);
-        }
-      } else {
-        setPending("Pago en proceso ⏳ (esperando confirmación del emisor)");
-      }
-    } else if(tick >= 8){
-      // Timeout “realista” de espera
-      clearInterval(timer);
-      setPending("Seguimos esperando confirmación… ⏳ Intenta nuevamente en unos segundos.");
+// Simulación de confirmación en tiempo real
+async function simularConfirmacion() {
+  const pasos = [
+    { progress: 20, status: 'processing', text: 'Conectando con la pasarela...', detail: 'Estableciendo conexión segura' },
+    { progress: 40, status: 'processing', text: 'Procesando pago...', detail: 'Verificando datos de la tarjeta' },
+    { progress: 60, status: 'processing', text: 'Validando con el banco...', detail: 'Esperando autorización' },
+    { progress: 80, status: 'processing', text: 'Confirmando transacción...', detail: 'Casi listo...' },
+    { progress: 100, status: 'success', text: '¡Pago confirmado!', detail: 'Tu pedido ha sido procesado exitosamente' }
+  ];
+  
+  for (let i = 0; i < pasos.length; i++) {
+    const paso = pasos[i];
+    await new Promise(resolve => setTimeout(resolve, 1200));
+    
+    progress.style.width = paso.progress + '%';
+    setStatus(paso.status, paso.text, paso.detail);
+  }
+  
+  // Mostrar resumen y links
+  mostrarResumen(ultimoPedido);
+  postLinks.style.display = 'flex';
+  
+  // Actualizar estado del pedido en la API si existe
+  if (ultimoPedido && ultimoPedido._id) {
+    try {
+      await API.actualizarPedido(ultimoPedido._id, { estado: 'confirmado' });
+    } catch (e) {
+      console.log('Pedido actualizado localmente');
     }
-  }, 900);
-});
-</script>
+  }
+}
 
+// Si no hay pedido, mostrar error
+if (!ultimoPedido && !ultimoPago) {
+  setStatus('error', 'No hay pedido pendiente', 'Realiza una compra primero');
+  progress.style.width = '100%';
+} else {
+  // Iniciar simulación
+  simularConfirmacion();
+}
+</script>
 </body>
 </html>

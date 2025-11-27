@@ -5,141 +5,419 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Historial de Pedidos - Fresh Bowl</title>
 <style>
-  body { font-family:'Poppins',sans-serif; background:#f9f9f9; margin:0; color:#333; }
-  header { background:#fff; padding:10px 40px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 8px rgba(0,0,0,0.1); position:sticky; top:0; }
-  .simulacion-box { background:white; padding:20px; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,0.1); width:400px; margin:50px auto; text-align:left; }
-  .simulacion-box h2 { margin:6px 0 14px; color:#388E3C; text-align:center; }
-  .simulacion-box button { width:100%; padding:10px; border:none; border-radius:6px; background:#4CAF50; color:white; font-weight:bold; cursor:pointer; margin-top:5px; }
-  .simulacion-box button:hover { background:#388E3C; }
-  .pedido { display:flex; flex-direction:column; gap:4px; margin-bottom:10px; padding:10px; border:1px solid #eee; border-radius:8px; background:#fff; }
-  .pedido .row { display:flex; justify-content:space-between; gap:10px; align-items:center; }
-  .id { font-weight:700; color:#444; }
-  .estado { font-size:.9em; padding:4px 8px; border-radius:999px; background:#eee; }
-  .estado.entregado, .estado.Pagado, .estado.Listo { background:#E6F4EA; color:#126B2E; }
-  .estado.Enviado { background:#DDEBFF; color:#1E5AA7; }
-  .estado.Preparación { background:#FFF4D8; color:#7A4D00; }
-  .muted { color:#666; font-size:.92em; }
-  .empty { text-align:center; color:#777; margin-top:10px; }
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  min-height: 100vh;
+}
+header {
+  background: white;
+  padding: 15px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+header h1 {
+  color: #2e7d32;
+  margin: 0;
+  font-size: 1.5em;
+}
+header nav a {
+  color: #27ae60;
+  text-decoration: none;
+  margin-left: 20px;
+  font-weight: 500;
+}
+header nav a:hover { text-decoration: underline; }
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 30px 20px;
+}
+
+.page-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+.page-title h2 { color: #2e7d32; margin: 0; }
+
+.filters {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.filter-btn {
+  padding: 8px 16px;
+  border: 2px solid #ddd;
+  background: white;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: all 0.3s;
+}
+.filter-btn:hover { border-color: #27ae60; }
+.filter-btn.active {
+  background: #27ae60;
+  border-color: #27ae60;
+  color: white;
+}
+
+.orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.order-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  transition: all 0.3s;
+}
+.order-card:hover {
+  box-shadow: 0 4px 15px rgba(0,0,0,0.12);
+  transform: translateY(-2px);
+}
+
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #eee;
+}
+.order-id {
+  font-weight: bold;
+  color: #333;
+}
+.order-date {
+  color: #666;
+  font-size: 0.9em;
+}
+
+.order-status {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 15px;
+  font-size: 0.85em;
+  font-weight: 500;
+}
+.status-pendiente { background: #fff3e0; color: #e65100; }
+.status-pagado { background: #e3f2fd; color: #1565c0; }
+.status-preparando { background: #fff8e1; color: #f57f17; }
+.status-enviado { background: #e8f5e9; color: #2e7d32; }
+.status-entregado { background: #c8e6c9; color: #1b5e20; }
+.status-cancelado { background: #ffebee; color: #c62828; }
+
+.order-items {
+  margin-bottom: 15px;
+}
+.order-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  color: #555;
+  font-size: 0.95em;
+}
+
+.order-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 12px;
+  border-top: 1px solid #eee;
+}
+.order-total {
+  font-size: 1.1em;
+  font-weight: bold;
+  color: #2e7d32;
+}
+.order-actions {
+  display: flex;
+  gap: 10px;
+}
+.btn-small {
+  padding: 8px 15px;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85em;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-decoration: none;
+}
+.btn-primary-small {
+  background: #27ae60;
+  color: white;
+}
+.btn-primary-small:hover { background: #2ecc71; }
+.btn-outline-small {
+  background: transparent;
+  border: 1px solid #27ae60;
+  color: #27ae60;
+}
+.btn-outline-small:hover { background: #e8f5e9; }
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
+  background: white;
+  border-radius: 12px;
+}
+.empty-state .icon { font-size: 3em; margin-bottom: 15px; }
+.empty-state a {
+  display: inline-block;
+  margin-top: 20px;
+  background: #27ae60;
+  color: white;
+  padding: 12px 25px;
+  border-radius: 8px;
+  text-decoration: none;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+.login-prompt {
+  background: white;
+  padding: 40px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+.login-prompt a {
+  display: inline-block;
+  margin-top: 15px;
+  background: #27ae60;
+  color: white;
+  padding: 12px 25px;
+  border-radius: 8px;
+  text-decoration: none;
+}
 </style>
 </head>
 <body>
 
 <header>
-  <div class="logo"><h1>Fresh Bowl</h1></div>
+  <h1>🥗 Fresh Bowl</h1>
+  <nav>
+    <a href="B6_ListaProducto.html">Productos</a>
+    <a href="B18_Crear_Pedido.html">Carrito</a>
+    <a href="B33_ver_perfil.html">Mi Perfil</a>
+    <a href="index.html">Inicio</a>
+  </nav>
 </header>
 
-<section class="simulaciones">
-  <div class="simulacion-box">
+<div class="container">
+  <div class="page-title">
     <h2>📦 Historial de Pedidos</h2>
-    <button onclick="mostrarTodos()">Ver todos los pedidos</button>
-    <button onclick="filtrarEntregado()">Filtrar entregados</button>
-    <div id="lista-pedidos" style="margin-top:12px;"></div>
+    <div class="filters">
+      <button class="filter-btn active" data-filter="todos">Todos</button>
+      <button class="filter-btn" data-filter="pendiente">Pendientes</button>
+      <button class="filter-btn" data-filter="pagado">Pagados</button>
+      <button class="filter-btn" data-filter="entregado">Entregados</button>
+    </div>
   </div>
-</section>
 
+  <div id="orders-container" class="orders-list">
+    <div class="loading">Cargando pedidos...</div>
+  </div>
+</div>
+
+<script src="api.js"></script>
 <script>
-/* =========================
-   Fuente de datos:
-   - Si existe localStorage.orders (array de { id, dateISO, email, items:[{name,qty,price}], total, estado }),
-     lo usamos y lo “aplanamos” para esta vista.
-   - Si no existe, usamos tus 3 ejemplos bajo 'pedidosFallback'.
-   ========================= */
-const pedidosFallback = [
-  { id: 1, producto: "Ensalada César",   estado: "entregado" },
-  { id: 2, producto: "Ensalada Tropical", estado: "pendiente" },
-  { id: 3, producto: "Ensalada Rusa",     estado: "entregado" },
-];
+let todosLosPedidos = [];
+let filtroActual = 'todos';
 
-function getOrdersFromLocalStorage() {
-  try {
-    const raw = localStorage.getItem('orders');
-    if (!raw) return null;
-    const arr = JSON.parse(raw);
-    if (!Array.isArray(arr)) return null;
-
-    // Convertimos cada pedido a uno o varios "registros" legibles para tu estructura.
-    // Aquí mostramos UN registro por pedido (resumen de items).
-    return arr.map(o => {
-      const productos = (o.items || [])
-        .map(it => `${it.name || it.id || 'Producto'} x${it.qty || 1}`)
-        .join(', ');
-      return {
-        id: o.id || '-',
-        producto: productos || '—',
-        // Normalizamos estado a string simple
-        estado: (o.estado || '').toString()
-      };
-    });
-  } catch (e) {
-    return null;
-  }
+// Formatear precio
+function fmtCLP(n) {
+  return new Intl.NumberFormat('es-CL', {
+    style: 'currency',
+    currency: 'CLP',
+    maximumFractionDigits: 0
+  }).format(n);
 }
 
-function fuentePedidos() {
-  return getOrdersFromLocalStorage() || pedidosFallback;
+// Formatear fecha
+function fmtFecha(iso) {
+  if (!iso) return 'Sin fecha';
+  return new Date(iso).toLocaleString('es-CL', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
 }
 
-/* =========================
-   Render
-   ========================= */
-const listaEl = document.getElementById('lista-pedidos');
+// Verificar login
+function verificarUsuario() {
+  const usuario = JSON.parse(localStorage.getItem('usuarioFB') || '{}');
+  return usuario.id || usuario.email;
+}
 
-function render(lista) {
-  listaEl.innerHTML = '';
-  if (!lista || lista.length === 0) {
-    const p = document.createElement('p');
-    p.className = 'empty';
-    p.textContent = 'No hay pedidos';
-    listaEl.appendChild(p);
+// Cargar pedidos
+async function cargarPedidos() {
+  const container = document.getElementById('orders-container');
+  
+  if (!verificarUsuario()) {
+    container.innerHTML = `
+      <div class="login-prompt">
+        <p>Debes iniciar sesión para ver tu historial de pedidos</p>
+        <a href="B4_Inicio_Sesion.html">Iniciar Sesión</a>
+      </div>
+    `;
     return;
   }
-
-  lista.forEach(p => {
-    const card = document.createElement('div');
-    card.className = 'pedido';
-
-    // Normalizamos estado visual (con mayúsculas iniciales si viene en minúsculas)
-    const est = (p.estado || '').toString();
-    const estNorm = (()=>{
-      const map = {
-        'entregado':'Entregado',
-        'pendiente':'Pendiente',
-        'pagado':'Pagado',
-        'preparación':'Preparación',
-        'preparacion':'Preparación',
-        'listo':'Listo',
-        'enviado':'Enviado'
-      };
-      const key = est.toLowerCase();
-      return map[key] || est;
-    })();
-
-    card.innerHTML = `
-      <div class="row">
-        <span class="id">ID: ${p.id}</span>
-        <span class="estado ${estNorm}">${estNorm}</span>
+  
+  container.innerHTML = '<div class="loading">Cargando pedidos...</div>';
+  
+  try {
+    const usuario = JSON.parse(localStorage.getItem('usuarioFB') || '{}');
+    
+    // Intentar obtener pedidos de la API
+    let pedidosAPI = [];
+    try {
+      pedidosAPI = await API.getPedidos();
+      // Filtrar por usuario si hay ID
+      if (usuario.id) {
+        pedidosAPI = pedidosAPI.filter(p => p.usuario_id === usuario.id);
+      }
+    } catch (e) {
+      console.warn('No se pudieron cargar pedidos de API:', e);
+    }
+    
+    // También obtener pedidos guardados localmente (del pago reciente)
+    const pagoLocal = JSON.parse(localStorage.getItem('pagoCompletado') || 'null');
+    
+    todosLosPedidos = pedidosAPI;
+    
+    // Si hay un pago local reciente que no está en la lista, agregarlo
+    if (pagoLocal && pagoLocal.pedido_id) {
+      const existe = todosLosPedidos.some(p => p._id === pagoLocal.pedido_id);
+      if (!existe) {
+        todosLosPedidos.unshift({
+          _id: pagoLocal.pedido_id,
+          total: pagoLocal.total,
+          estado: 'pagado',
+          fecha_creacion: pagoLocal.fecha,
+          items: []
+        });
+      }
+    }
+    
+    renderPedidos();
+    
+  } catch (error) {
+    console.error('Error:', error);
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">⚠️</div>
+        <p>Error al cargar los pedidos</p>
+        <a href="javascript:location.reload()">Reintentar</a>
       </div>
-      <div class="muted">${p.producto}</div>
     `;
-    listaEl.appendChild(card);
-  });
+  }
 }
 
-function mostrarTodos() {
-  const data = fuentePedidos();
-  render(data);
-}
-function filtrarEntregado() {
-  const data = fuentePedidos().filter(p => {
-    const e = (p.estado || '').toString().toLowerCase();
-    return e === 'entregado';
-  });
-  render(data);
+// Renderizar pedidos
+function renderPedidos() {
+  const container = document.getElementById('orders-container');
+  
+  let pedidosFiltrados = todosLosPedidos;
+  if (filtroActual !== 'todos') {
+    pedidosFiltrados = todosLosPedidos.filter(p => 
+      (p.estado || '').toLowerCase() === filtroActual
+    );
+  }
+  
+  if (pedidosFiltrados.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">📭</div>
+        <p>${filtroActual === 'todos' ? 'Aún no tienes pedidos' : 'No hay pedidos ' + filtroActual + 's'}</p>
+        <a href="B6_ListaProducto.html">Ver productos</a>
+      </div>
+    `;
+    return;
+  }
+  
+  container.innerHTML = pedidosFiltrados.map(pedido => {
+    const id = pedido._id || pedido.id || 'N/A';
+    const idCorto = id.toString().slice(-8).toUpperCase();
+    const estado = (pedido.estado || 'pendiente').toLowerCase();
+    const estadoClass = 'status-' + estado;
+    const estadoTexto = estado.charAt(0).toUpperCase() + estado.slice(1);
+    
+    // Renderizar items
+    let itemsHtml = '';
+    if (pedido.items && pedido.items.length > 0) {
+      itemsHtml = pedido.items.slice(0, 3).map(item => 
+        '<div class="order-item">' +
+          '<span>' + (item.nombre || item.producto_id || 'Producto') + ' x' + (item.cantidad || 1) + '</span>' +
+          '<span>' + fmtCLP(item.subtotal || item.precio_unitario || 0) + '</span>' +
+        '</div>'
+      ).join('');
+      if (pedido.items.length > 3) {
+        itemsHtml += '<div class="order-item"><span>...y ' + (pedido.items.length - 3) + ' más</span></div>';
+      }
+    } else {
+      itemsHtml = '<div class="order-item"><span>Pedido procesado</span></div>';
+    }
+    
+    let actionsHtml = '';
+    if (estado === 'enviado' || estado === 'preparando') {
+      actionsHtml += '<a href="B25_seguimiento_pedido.html?id=' + id + '" class="btn-small btn-primary-small">Seguir</a>';
+    }
+    if (estado === 'pagado') {
+      actionsHtml += '<a href="B22_boleta_digital.html?id=' + id + '" class="btn-small btn-outline-small">Boleta</a>';
+    }
+    
+    return '<div class="order-card">' +
+      '<div class="order-header">' +
+        '<div>' +
+          '<span class="order-id">#' + idCorto + '</span>' +
+          '<span class="order-date"> · ' + fmtFecha(pedido.fecha_creacion || pedido.created_at) + '</span>' +
+        '</div>' +
+        '<span class="order-status ' + estadoClass + '">' + estadoTexto + '</span>' +
+      '</div>' +
+      '<div class="order-items">' + itemsHtml + '</div>' +
+      '<div class="order-footer">' +
+        '<span class="order-total">' + fmtCLP(pedido.total || 0) + '</span>' +
+        '<div class="order-actions">' + actionsHtml + '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
 }
 
-// Carga inicial (muestra todos)
-mostrarTodos();
+// Filtros
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    filtroActual = btn.dataset.filter;
+    renderPedidos();
+  });
+});
+
+// Iniciar
+cargarPedidos();
 </script>
-
 </body>
 </html>

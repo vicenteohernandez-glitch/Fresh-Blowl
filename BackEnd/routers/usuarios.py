@@ -8,13 +8,24 @@ from passlib.context import CryptContext
 router = APIRouter()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+def serialize_doc(doc):
+    """Convierte ObjectId a string para serialización JSON"""
+    if doc is None:
+        return None
+    doc["_id"] = str(doc["_id"])
+    return doc
+
+def serialize_docs(docs):
+    """Serializa una lista de documentos"""
+    return [serialize_doc(doc) for doc in docs]
+
 def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
-@router.post("/", response_model=UsuarioResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_usuario(usuario: UsuarioCreate):
     """Crear un nuevo usuario"""
     collection = get_collection("usuarios")
@@ -27,22 +38,22 @@ async def create_usuario(usuario: UsuarioCreate):
             detail="El email ya está registrado"
         )
     
-    usuario_dict = usuario.dict(exclude={"password"})
+    usuario_dict = usuario.model_dump(exclude={"password"})
     usuario_dict["hash_password"] = get_password_hash(usuario.password)
     
     result = await collection.insert_one(usuario_dict)
     created_usuario = await collection.find_one({"_id": result.inserted_id})
     
-    return created_usuario
+    return serialize_doc(created_usuario)
 
-@router.get("/", response_model=List[UsuarioResponse])
+@router.get("/")
 async def get_usuarios(skip: int = 0, limit: int = 100):
     """Obtener lista de usuarios"""
     collection = get_collection("usuarios")
     usuarios = await collection.find().skip(skip).limit(limit).to_list(length=limit)
-    return usuarios
+    return serialize_docs(usuarios)
 
-@router.get("/{usuario_id}", response_model=UsuarioResponse)
+@router.get("/{usuario_id}")
 async def get_usuario(usuario_id: str):
     """Obtener un usuario por ID"""
     collection = get_collection("usuarios")
@@ -54,9 +65,9 @@ async def get_usuario(usuario_id: str):
     if not usuario:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado")
     
-    return usuario
+    return serialize_doc(usuario)
 
-@router.put("/{usuario_id}", response_model=UsuarioResponse)
+@router.put("/{usuario_id}")
 async def update_usuario(usuario_id: str, usuario: UsuarioUpdate):
     """Actualizar un usuario"""
     collection = get_collection("usuarios")
@@ -64,7 +75,7 @@ async def update_usuario(usuario_id: str, usuario: UsuarioUpdate):
     if not ObjectId.is_valid(usuario_id):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="ID inválido")
     
-    update_data = {k: v for k, v in usuario.dict(exclude_unset=True).items() if v is not None}
+    update_data = {k: v for k, v in usuario.model_dump(exclude_unset=True).items() if v is not None}
     
     if not update_data:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No hay datos para actualizar")
@@ -78,7 +89,7 @@ async def update_usuario(usuario_id: str, usuario: UsuarioUpdate):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado")
     
     updated_usuario = await collection.find_one({"_id": ObjectId(usuario_id)})
-    return updated_usuario
+    return serialize_doc(updated_usuario)
 
 @router.delete("/{usuario_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_usuario(usuario_id: str):
