@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException, status
 from typing import List
 from bson import ObjectId
-from api.models.comprobante import ComprobanteCreate, ComprobanteUpdate, ComprobanteResponse
-from api.database import get_collection
+from models.comprobante import ComprobanteCreate, ComprobanteUpdate, ComprobanteResponse
+from database import get_collection
 
 router = APIRouter()
 

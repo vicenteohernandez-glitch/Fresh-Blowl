@@ -1,13 +1,24 @@
 from fastapi import APIRouter, HTTPException, status
 from typing import List, Optional
 from bson import ObjectId
-from api.models.producto import (
+from models.producto import (
     ProductoCreate, ProductoUpdate, ProductoResponse,
     VarianteCreate, VarianteUpdate, VarianteResponse
 )
-from api.database import get_collection
+from database import get_collection
 
 router = APIRouter()
+
+def serialize_doc(doc):
+    """Convertir ObjectId a string para serialización"""
+    if doc is None:
+        return None
+    doc["_id"] = str(doc["_id"])
+    return doc
+
+def serialize_docs(docs):
+    """Convertir lista de documentos"""
+    return [serialize_doc(doc) for doc in docs]
 
 # ============= PRODUCTOS =============
 
@@ -20,7 +31,7 @@ async def create_producto(producto: ProductoCreate):
     result = await collection.insert_one(producto_dict)
     created_producto = await collection.find_one({"_id": result.inserted_id})
     
-    return created_producto
+    return serialize_doc(created_producto)
 
 @router.get("/", response_model=List[ProductoResponse])
 async def get_productos(
@@ -42,7 +53,7 @@ async def get_productos(
         query["agotado"] = agotado
     
     productos = await collection.find(query).skip(skip).limit(limit).to_list(length=limit)
-    return productos
+    return serialize_docs(productos)
 
 @router.get("/{producto_id}", response_model=ProductoResponse)
 async def get_producto(producto_id: str):
@@ -56,7 +67,7 @@ async def get_producto(producto_id: str):
     if not producto:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Producto no encontrado")
     
-    return producto
+    return serialize_doc(producto)
 
 @router.put("/{producto_id}", response_model=ProductoResponse)
 async def update_producto(producto_id: str, producto: ProductoUpdate):
@@ -80,7 +91,7 @@ async def update_producto(producto_id: str, producto: ProductoUpdate):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Producto no encontrado")
     
     updated_producto = await collection.find_one({"_id": ObjectId(producto_id)})
-    return updated_producto
+    return serialize_doc(updated_producto)
 
 @router.delete("/{producto_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_producto(producto_id: str):

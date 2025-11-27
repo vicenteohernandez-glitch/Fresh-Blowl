@@ -1,11 +1,11 @@
 from fastapi import APIRouter, HTTPException, status
 from typing import List
 from bson import ObjectId
-from api.models.ingrediente import (
+from models.ingrediente import (
     IngredienteCreate, IngredienteUpdate, IngredienteResponse,
     ProductoIngredienteCreate, ProductoIngredienteResponse
 )
-from api.database import get_collection
+from database import get_collection
 
 router = APIRouter()
 

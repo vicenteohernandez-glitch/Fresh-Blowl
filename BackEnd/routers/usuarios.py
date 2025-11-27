@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException, status
 from typing import List
 from bson import ObjectId
-from api.models.usuario import UsuarioCreate, UsuarioUpdate, UsuarioResponse, UsuarioLogin
-from api.database import get_collection
+from models.usuario import UsuarioCreate, UsuarioUpdate, UsuarioResponse, UsuarioLogin
+from database import get_collection
 from passlib.context import CryptContext
 
 router = APIRouter()
@@ -113,14 +113,18 @@ async def login(credentials: UsuarioLogin):
             detail="Credenciales incorrectas"
         )
     
-    if not usuario.get("activo", False):
+    if not usuario.get("activo", True):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Usuario inactivo"
         )
     
+    # Devolver datos del usuario (sin password)
     return {
-        "message": "Login exitoso",
-        "usuario_id": str(usuario["_id"]),
-        "email": usuario["email"]
+        "_id": str(usuario["_id"]),
+        "nombre": usuario.get("nombre", ""),
+        "email": usuario["email"],
+        "telefono": usuario.get("telefono", ""),
+        "email_verificado": usuario.get("email_verificado", False),
+        "activo": usuario.get("activo", True)
     }

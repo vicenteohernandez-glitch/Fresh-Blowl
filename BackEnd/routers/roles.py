@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException, status
 from typing import List
 from bson import ObjectId
-from api.models.rol import RolCreate, RolUpdate, RolResponse, UsuarioRol
-from api.database import get_collection
+from models.rol import RolCreate, RolUpdate, RolResponse, UsuarioRol
+from database import get_collection
 
 router = APIRouter()
 

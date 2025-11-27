@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException, status
 from typing import List
 from bson import ObjectId
-from api.models.envio import EnvioCreate, EnvioUpdate, EnvioResponse
-from api.database import get_collection
+from models.envio import EnvioCreate, EnvioUpdate, EnvioResponse
+from database import get_collection
 
 router = APIRouter()
 

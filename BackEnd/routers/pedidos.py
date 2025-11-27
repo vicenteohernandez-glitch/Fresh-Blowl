@@ -1,11 +1,11 @@
 from fastapi import APIRouter, HTTPException, status
 from typing import List, Optional
 from bson import ObjectId
-from api.models.pedido import (
+from models.pedido import (
     PedidoCreate, PedidoUpdate, PedidoResponse,
     PedidoItemCreate, PedidoItemResponse
 )
-from api.database import get_collection
+from database import get_collection
 
 router = APIRouter()
 

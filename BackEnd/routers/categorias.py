@@ -1,10 +1,21 @@
 from fastapi import APIRouter, HTTPException, status
 from typing import List
 from bson import ObjectId
-from api.models.categoria import CategoriaCreate, CategoriaUpdate, CategoriaResponse
-from api.database import get_collection
+from models.categoria import CategoriaCreate, CategoriaUpdate, CategoriaResponse
+from database import get_collection
 
 router = APIRouter()
+
+def serialize_doc(doc):
+    """Convertir ObjectId a string para serialización"""
+    if doc is None:
+        return None
+    doc["_id"] = str(doc["_id"])
+    return doc
+
+def serialize_docs(docs):
+    """Convertir lista de documentos"""
+    return [serialize_doc(doc) for doc in docs]
 
 @router.post("/", response_model=CategoriaResponse, status_code=status.HTTP_201_CREATED)
 async def create_categoria(categoria: CategoriaCreate):
@@ -15,7 +26,7 @@ async def create_categoria(categoria: CategoriaCreate):
     result = await collection.insert_one(categoria_dict)
     created_categoria = await collection.find_one({"_id": result.inserted_id})
     
-    return created_categoria
+    return serialize_doc(created_categoria)
 
 @router.get("/", response_model=List[CategoriaResponse])
 async def get_categorias(skip: int = 0, limit: int = 100, visible: bool = None):
@@ -27,7 +38,7 @@ async def get_categorias(skip: int = 0, limit: int = 100, visible: bool = None):
         query["visible"] = visible
     
     categorias = await collection.find(query).skip(skip).limit(limit).to_list(length=limit)
-    return categorias
+    return serialize_docs(categorias)
 
 @router.get("/{categoria_id}", response_model=CategoriaResponse)
 async def get_categoria(categoria_id: str):
@@ -41,7 +52,7 @@ async def get_categoria(categoria_id: str):
     if not categoria:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Categoría no encontrada")
     
-    return categoria
+    return serialize_doc(categoria)
 
 @router.get("/slug/{slug}", response_model=CategoriaResponse)
 async def get_categoria_by_slug(slug: str):
@@ -52,7 +63,7 @@ async def get_categoria_by_slug(slug: str):
     if not categoria:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Categoría no encontrada")
     
-    return categoria
+    return serialize_doc(categoria)
 
 @router.put("/{categoria_id}", response_model=CategoriaResponse)
 async def update_categoria(categoria_id: str, categoria: CategoriaUpdate):

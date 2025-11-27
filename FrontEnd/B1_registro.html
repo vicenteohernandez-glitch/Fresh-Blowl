@@ -85,6 +85,11 @@
       <button class="toggle-pass" id="togglePass" aria-label="Mostrar u ocultar contraseña" type="button">Mostrar</button>
     </div>
 
+    <div class="field">
+      <label for="nombre">Nombre (opcional)</label>
+      <input type="text" id="nombre" placeholder="Tu nombre" autocomplete="name">
+    </div>
+
     <button id="registrar">Registrar</button>
     <p id="mensaje" class="error" aria-live="polite"></p>
 
@@ -94,19 +99,27 @@
     </div>
   </main>
 
+  <!-- Cargar API -->
+  <script src="api.js"></script>
+  
   <script>
     const emailInput = document.getElementById('email');
     const passInput = document.getElementById('pass');
+    const nombreInput = document.getElementById('nombre');
     const registrarBtn = document.getElementById('registrar');
     const mensaje = document.getElementById('mensaje');
     const togglePass = document.getElementById('togglePass');
 
     // Helpers
     function isEmailValid(e){
-      // Valida formato básico de email
       return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
     }
-    function setMsg(text){ mensaje.textContent = text || ''; }
+    
+    function setMsg(text, isError = true){ 
+      mensaje.textContent = text || ''; 
+      mensaje.className = isError ? 'error' : 'success';
+      mensaje.style.color = isError ? '#d32f2f' : '#2e7d32';
+    }
 
     // Mostrar/ocultar contraseña
     togglePass.addEventListener('click', () => {
@@ -117,87 +130,71 @@
     });
 
     // Submit con Enter
-    [emailInput, passInput].forEach(el=>{
-      el.addEventListener('keypress', (e)=>{
-        if(e.key === 'Enter'){ e.preventDefault(); registrarBtn.click(); }
-      });
+    [emailInput, passInput, nombreInput].forEach(el => {
+      if (el) {
+        el.addEventListener('keypress', (e) => {
+          if(e.key === 'Enter'){ e.preventDefault(); registrarBtn.click(); }
+        });
+      }
     });
 
-    // Lógica de registro (respeta tus casos y mensajes)
-    registrarBtn.addEventListener('click', () => {
+    // Lógica de registro con API real
+    registrarBtn.addEventListener('click', async () => {
       const email = emailInput.value.trim();
       const pass = passInput.value.trim();
+      const nombre = nombreInput.value.trim() || 'Usuario';
 
-      // Validaciones mínimas
+      // Validaciones
       if (email === "" || pass === "") {
         return setMsg("Completa email y contraseña");
       }
       if (!isEmailValid(email)) {
         return setMsg("Formato de email inválido");
       }
+      if (pass.length < 3) {
+        return setMsg("La contraseña debe tener al menos 3 caracteres");
+      }
 
-      // Casos de prueba
-      switch(email) {
-        case "cliente1@example.com":
-          if(pass === "123") {
-            setMsg("");
-            // Redirección exacta que tenías
-            window.location.href = "B2_ValidacionE.html";
-          } else {
-            setMsg("Contraseña incorrecta");
-          }
-          break;
+      // Deshabilitar botón mientras procesa
+      registrarBtn.disabled = true;
+      registrarBtn.textContent = "Registrando...";
+      setMsg("");
 
-        case "cliente2@example.com":
-          setMsg("Email no registrado");
-          break;
-
-        case "cliente3@example.com":
-          setMsg("Email ya en uso");
-          break;
-
-        case "cliente4@example.com":
-          if(pass === "345") {
-            setMsg("Contraseña no válida");
-          } else {
-            setMsg("Contraseña incorrecta");
-          }
-          break;
-
-        default:
-          setMsg("Email no registrado");
+      try {
+        // Llamar a la API
+        const resultado = await API.registrarUsuario(nombre, email, pass);
+        
+        if (resultado && resultado._id) {
+          // Registro exitoso
+          setMsg("¡Registro exitoso! Redirigiendo...", false);
+          
+          // Guardar datos en localStorage
+          localStorage.setItem('usuarioFB', JSON.stringify({
+            id: resultado._id,
+            nombre: resultado.nombre,
+            email: resultado.email,
+            telefono: resultado.telefono || ""
+          }));
+          
+          // Redirigir al perfil
+          setTimeout(() => {
+            window.location.href = "B33_ver_perfil.html";
+          }, 1000);
+        } else {
+          // Error del servidor
+          setMsg("El email ya está registrado o hubo un error");
+        }
+      } catch (error) {
+        setMsg("Error de conexión. Intenta de nuevo.");
+        console.error("Error registro:", error);
+      } finally {
+        registrarBtn.disabled = false;
+        registrarBtn.textContent = "Registrar";
       }
     });
 
     // Foco inicial
-    window.addEventListener('load', ()=> emailInput.focus());
+    window.addEventListener('load', () => emailInput.focus());
   </script>
 </body>
 </html>
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  const form = document.getElementById('form-registro') 
-            || document.querySelector('form#registro') 
-            || document.querySelector('form'); // fallback
-
-  const nombreEl  = document.getElementById('nombre')   || document.querySelector('[name=nombre]');
-  const emailEl   = document.getElementById('email')    || document.querySelector('[name=email]');
-  const telEl     = document.getElementById('telefono') || document.querySelector('[name=telefono]');
-
-  if (!form) return; // por si tu pantalla aún no tiene form
-
-  form.addEventListener('submit', (e) => {
-    e.preventDefault(); // evita que recargue
-
-    const u = {
-      nombre:  (nombreEl?.value || '').trim() || 'Usuario',
-      email:   (emailEl?.value || '').trim(),
-      telefono:(telEl?.value   || '').trim()
-    };
-
-    localStorage.setItem('usuarioFB', JSON.stringify(u));
-    alert('Registro exitoso ✅');
-    location.href = 'B33_Ver_Perfil.html'; // ir a Ver Perfil
-  });
-});
-</script>

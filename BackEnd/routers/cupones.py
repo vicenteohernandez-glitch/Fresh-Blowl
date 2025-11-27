@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException, status
 from typing import List
 from bson import ObjectId
-from api.models.cupon import CuponCreate, CuponUpdate, CuponResponse
-from api.database import get_collection
+from models.cupon import CuponCreate, CuponUpdate, CuponResponse
+from database import get_collection
 from datetime import datetime
 
 router = APIRouter()

@@ -1,22 +1,7 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional
 from datetime import datetime
-from bson import ObjectId
-
-class PyObjectId(ObjectId):
-    @classmethod
-    def __get_validators__(cls):
-        yield cls.validate
-
-    @classmethod
-    def validate(cls, v):
-        if not ObjectId.is_valid(v):
-            raise ValueError("Invalid ObjectId")
-        return ObjectId(v)
-
-    @classmethod
-    def __modify_schema__(cls, field_schema):
-        field_schema.update(type="string")
+from models.utils import PyObjectId
 
 class PagoBase(BaseModel):
     pedido_id: str
@@ -34,18 +19,11 @@ class PagoUpdate(BaseModel):
     token: Optional[str] = None
 
 class Pago(PagoBase):
-    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    model_config = ConfigDict(populate_by_name=True, arbitrary_types_allowed=True)
+    id: PyObjectId = Field(alias="_id")
     creado_en: datetime = Field(default_factory=datetime.utcnow)
-    
-    class Config:
-        allow_population_by_field_name = True
-        arbitrary_types_allowed = True
-        json_encoders = {ObjectId: str}
 
 class PagoResponse(PagoBase):
+    model_config = ConfigDict(populate_by_name=True)
     id: str = Field(alias="_id")
-    creado_en: datetime
-    
-    class Config:
-        allow_population_by_field_name = True
-        json_encoders = {ObjectId: str}
+    creado_en: Optional[datetime] = None

@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
+from database import connect_to_mongo, close_mongo_connection
 from routers import (
     usuarios,
     roles,
@@ -16,10 +18,19 @@ from routers import (
     comprobantes
 )
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup: conectar a MongoDB
+    await connect_to_mongo()
+    yield
+    # Shutdown: cerrar conexión
+    await close_mongo_connection()
+
 app = FastAPI(
-    title="ViChoPremium API",
+    title="Fresh Bowl API",
     description="API para sistema de venta de ensaladas personalizadas",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan
 )
 
 # Configurar CORS

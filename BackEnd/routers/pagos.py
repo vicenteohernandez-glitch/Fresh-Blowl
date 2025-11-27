@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException, status
 from typing import List, Optional
 from bson import ObjectId
-from api.models.pago import PagoCreate, PagoUpdate, PagoResponse
-from api.database import get_collection
+from models.pago import PagoCreate, PagoUpdate, PagoResponse
+from database import get_collection
 
 router = APIRouter()
 

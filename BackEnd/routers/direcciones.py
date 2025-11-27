@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException, status
 from typing import List
 from bson import ObjectId
-from api.models.direccion import DireccionCreate, DireccionUpdate, DireccionResponse
-from api.database import get_collection
+from models.direccion import DireccionCreate, DireccionUpdate, DireccionResponse
+from database import get_collection
 
 router = APIRouter()
 

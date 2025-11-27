@@ -90,9 +90,13 @@
 
   <div class="links">
     <a href="index.html">Volver al inicio</a>
+    <a href="B1_registro.html">¿No tienes cuenta? Regístrate</a>
     <span class="recuperar" id="recuperar">Recuperar contraseña</span>
   </div>
 </div>
+
+<!-- Cargar API -->
+<script src="api.js"></script>
 
 <script>
   const emailInput   = document.getElementById('email');
@@ -126,8 +130,8 @@
     });
   });
 
-  // Botón ingresar
-  ingresarBtn.addEventListener('click', () => {
+  // Botón ingresar con API real
+  ingresarBtn.addEventListener('click', async () => {
     const email = emailInput.value.trim();
     const pass  = passInput.value.trim();
 
@@ -138,34 +142,47 @@
       return setMsg("Formato de email inválido");
     }
 
-    // ADMIN
-    if(email === "admin@example.com" && pass === "admin"){
-      setMsg("Has iniciado sesión como ADMIN", true);
-      // Persistimos referencia simple de sesión (simulada)
-      localStorage.setItem('emailRegistro', email);
-      setTimeout(() => {
-        window.location.href = "index.html"; // o "admin_panel.html"
-      }, 1200);
-      return;
-    }
+    // Deshabilitar mientras procesa
+    ingresarBtn.disabled = true;
+    ingresarBtn.textContent = "Ingresando...";
+    setMsg("");
 
-    // CLIENTE REGISTRADO
-    if(email === "cliente3@example.com" && pass === "444"){
-      setMsg("Has iniciado sesión", true);
-      localStorage.setItem('emailRegistro', email);
-      setTimeout(() => {
-        window.location.href = "index.html";
-      }, 1200);
-      return;
+    try {
+      // Llamar a la API de login
+      const resultado = await API.loginUsuario(email, pass);
+      
+      if (resultado && resultado._id) {
+        // Login exitoso
+        setMsg("¡Bienvenido! Redirigiendo...", true);
+        
+        // Guardar datos en localStorage
+        localStorage.setItem('usuarioFB', JSON.stringify({
+          id: resultado._id,
+          nombre: resultado.nombre,
+          email: resultado.email,
+          telefono: resultado.telefono || "",
+          rol_id: resultado.rol_id || null
+        }));
+        localStorage.setItem('emailRegistro', email);
+        
+        // Redirigir según rol (si hay admin)
+        setTimeout(() => {
+          window.location.href = "index.html";
+        }, 1000);
+      } else {
+        setMsg("Email o contraseña incorrecta");
+      }
+    } catch (error) {
+      console.error("Error login:", error);
+      setMsg("Error de conexión. Intenta de nuevo.");
+    } finally {
+      ingresarBtn.disabled = false;
+      ingresarBtn.textContent = "Ingresar";
     }
-
-    // Otros casos
-    setMsg("Email o contraseña incorrecta");
   });
 
   // Ir a recuperar contraseña
   recuperarBtn.addEventListener('click', () => {
-    // Importante: usar nombre de archivo sin 'ñ' para evitar problemas de rutas
     window.location.href = "B3_Recuperar_Contrasena.html";
   });
 
@@ -178,33 +195,3 @@
 </script>
 </body>
 </html>
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  const form = document.getElementById('form-login') 
-            || document.querySelector('form#login') 
-            || document.querySelector('form');
-
-  const emailEl = document.getElementById('email') || document.querySelector('[name=email]');
-  const passEl  = document.getElementById('password') || document.querySelector('[name=password]');
-
-  if (!form) return;
-
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-
-    const email = (emailEl?.value || '').trim();
-    if (!email) { alert('Ingresa tu correo'); return; }
-
-    // Recupera si ya hay datos guardados de registro
-    const u = JSON.parse(localStorage.getItem('usuarioFB') || '{}');
-    if (!u.nombre) {
-      u.nombre = (email.split('@')[0] || 'Usuario'); // nombre a partir del correo
-    }
-    u.email = email;
-
-    localStorage.setItem('usuarioFB', JSON.stringify(u));
-    alert('Inicio de sesión correcto ✅');
-    location.href = 'B33_Ver_Perfil.html';
-  });
-});
-</script>

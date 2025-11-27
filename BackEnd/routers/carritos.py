@@ -1,11 +1,11 @@
 from fastapi import APIRouter, HTTPException, status
 from typing import List, Optional
 from bson import ObjectId
-from api.models.carrito import (
+from models.carrito import (
     CarritoCreate, CarritoUpdate, CarritoResponse,
     CarritoItemCreate, CarritoItemUpdate, CarritoItemResponse
 )
-from api.database import get_collection
+from database import get_collection
 from datetime import datetime
 
 router = APIRouter()
