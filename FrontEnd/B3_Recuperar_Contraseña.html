@@ -1,182 +1,185 @@
-<!-- Archivo: B3_Recuperar_Contrasena.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>B-3 Recuperar Contraseña</title>
+<title>Recuperar Contraseña - Fresh Bowl</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
 <style>
-  body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: url('https://www.panchovilla.cl/wp-content/uploads/2022/08/Ensalada-de-camaron-y-palta.jpg') no-repeat center center fixed;
-    background-size: cover;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    padding: 20px;
-  }
-  .container {
-    background-color: rgba(255,255,255,0.95);
-    padding: 30px;
-    border-radius: 10px;
-    max-width: 420px;
-    width: 100%;
-    text-align: center;
-    box-shadow: 0px 4px 15px rgba(0,0,0,0.3);
-  }
-  input[type="text"], input[type="password"] {
-    width: 100%;
-    padding: 11px;
-    margin: 10px 0;
-    border-radius: 7px;
-    border: 1px solid #ccc;
-    box-sizing: border-box;
-    font-size: 15px;
-  }
-  button {
-    background-color: #27ae60;
-    color: white;
-    padding: 11px 20px;
-    border: none;
-    border-radius: 7px;
-    cursor: pointer;
-    width: 100%;
-    font-size: 16px;
-    margin-top: 5px;
-  }
-  button:hover { background-color: #2ecc71; }
-  .error { color: #d32f2f; font-size: 0.95em; margin-top: 5px; }
-  .success { color: #2e7d32; font-size: 0.95em; margin-top: 5px; }
-  a {
-    display: inline-block;
-    margin-top: 15px;
-    color: #27ae60;
-    text-decoration: none;
-    font-weight: bold;
-  }
-  a:hover { text-decoration: underline; }
-  .hidden { display: none; }
-  .hint { font-size: 12px; color:#666; margin-top: -4px; }
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.container {
+  background: white;
+  padding: 35px;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+h2 { color: #2e7d32; margin-bottom: 10px; }
+.subtitle { color: #666; margin-bottom: 25px; font-size: 0.95em; }
+
+.form-group { margin-bottom: 18px; text-align: left; }
+label { display: block; margin-bottom: 6px; font-weight: 600; color: #333; }
+
+input {
+  width: 100%;
+  padding: 14px;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  font-size: 1em;
+}
+input:focus { outline: none; border-color: #27ae60; }
+
+.btn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  font-size: 1em;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 10px;
+}
+.btn-primary { background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; }
+.btn-secondary { background: #f5f5f5; color: #333; }
+
+.mensaje {
+  padding: 12px;
+  border-radius: 8px;
+  margin-top: 15px;
+  display: none;
+}
+.mensaje.error { display: block; background: #ffebee; color: #c62828; }
+.mensaje.success { display: block; background: #e8f5e9; color: #2e7d32; }
+
+.step { display: none; }
+.step.active { display: block; }
+
+.links { margin-top: 20px; }
+.links a { color: #27ae60; text-decoration: none; }
 </style>
 </head>
 <body>
-<div class="container" role="main" aria-labelledby="title">
-  <h3 id="title">Recuperar Contraseña</h3>
-  <p id="mensajeEnvio" class="success"></p>
 
-  <!-- Paso 1: ingresar código -->
-  <div id="codigoSection">
-    <input type="text" id="codigo" placeholder="Código de verificación" autocomplete="one-time-code" inputmode="numeric" aria-label="Código de verificación">
-    <button id="verificar">Verificar código</button>
-    <p id="mensajeCodigo" class="error" aria-live="polite"></p>
-    <p class="hint">Código de prueba: <strong>000</strong></p>
+<div class="container">
+  <h2>🔐 Recuperar Contraseña</h2>
+  
+  <!-- Paso 1: Ingresar email -->
+  <div class="step active" id="step1">
+    <p class="subtitle">Ingresa tu email para recuperar tu cuenta</p>
+    
+    <div class="form-group">
+      <label for="email">Email registrado</label>
+      <input type="email" id="email" placeholder="tu@email.com">
+    </div>
+    
+    <button class="btn btn-primary" id="btnBuscar">Buscar cuenta</button>
+    <div class="mensaje" id="msg1"></div>
   </div>
-
-  <!-- Paso 2: nueva contraseña -->
-  <div id="nuevaPassSection" class="hidden" aria-hidden="true">
-    <input type="password" id="nuevaPass" placeholder="Nueva contraseña" autocomplete="new-password" minlength="3">
-    <input type="password" id="repetirPass" placeholder="Reescribe la nueva contraseña" autocomplete="new-password" minlength="3">
-    <button id="cambiarPass">Cambiar contraseña</button>
-    <p id="mensajePass" class="error" aria-live="polite"></p>
+  
+  <!-- Paso 2: Nueva contraseña -->
+  <div class="step" id="step2">
+    <p class="subtitle">Ingresa tu nueva contraseña</p>
+    
+    <div class="form-group">
+      <label for="nueva">Nueva contraseña</label>
+      <input type="password" id="nueva" placeholder="Mínimo 6 caracteres">
+    </div>
+    
+    <div class="form-group">
+      <label for="confirmar">Confirmar contraseña</label>
+      <input type="password" id="confirmar" placeholder="Repite la contraseña">
+    </div>
+    
+    <button class="btn btn-primary" id="btnCambiar">Cambiar contraseña</button>
+    <div class="mensaje" id="msg2"></div>
   </div>
-
-  <a href="index.html">Volver al inicio</a>
+  
+  <div class="links">
+    <a href="B4_Inicio_Sesion.html">← Volver a iniciar sesión</a>
+  </div>
 </div>
 
+<script src="api.js"></script>
 <script>
-  // --- Email enmascarado (si viene de B1 y lo guardaste como emailRegistro) ---
-  const email = localStorage.getItem('emailRegistro') || 'tu correo registrado';
-  const masked = (e => {
-    if (!e || !e.includes('@')) return e;
-    const [user, dom] = e.split('@');
-    if (user.length <= 2) return '*@' + dom;
-    return user[0] + '*'.repeat(Math.max(1, user.length - 2)) + user.slice(-1) + '@' + dom;
-  })(email);
-  document.getElementById('mensajeEnvio').textContent = `Se ha enviado un código de verificación a ${masked}`;
+let usuarioEncontrado = null;
 
-  // --- Elementos ---
-  const codigoInput = document.getElementById('codigo');
-  const verificarBtn = document.getElementById('verificar');
-  const mensajeCodigo = document.getElementById('mensajeCodigo');
+function mostrarMensaje(id, texto, tipo) {
+  const msg = document.getElementById(id);
+  msg.textContent = texto;
+  msg.className = 'mensaje ' + tipo;
+}
 
-  const codigoSection = document.getElementById('codigoSection');
-  const nuevaPassSection = document.getElementById('nuevaPassSection');
-  const nuevaPassInput = document.getElementById('nuevaPass');
-  const repetirPassInput = document.getElementById('repetirPass');
-  const cambiarPassBtn = document.getElementById('cambiarPass');
-  const mensajePass = document.getElementById('mensajePass');
+function mostrarPaso(num) {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  document.getElementById('step' + num).classList.add('active');
+}
 
-  // --- Helpers ---
-  function setMsg(el, text, ok=false){
-    el.textContent = text || '';
-    el.className = ok ? 'success' : (text ? 'error' : '');
+// Paso 1: Buscar cuenta por email
+document.getElementById('btnBuscar').addEventListener('click', async () => {
+  const email = document.getElementById('email').value.trim();
+  
+  if (!email) {
+    mostrarMensaje('msg1', '⚠️ Ingresa tu email', 'error');
+    return;
   }
-
-  // Bloquear espacios en los inputs
-  [codigoInput].forEach(i=>{
-    i.addEventListener('input', ()=> i.value = i.value.replace(/\s/g,''));
-  });
-  [nuevaPassInput, repetirPassInput].forEach(i=>{
-    i.addEventListener('input', ()=> i.value = i.value.replace(/\s/g,''));
-  });
-
-  // Enter para verificar código
-  codigoInput.addEventListener('keypress', (e)=>{
-    if(e.key === 'Enter'){ e.preventDefault(); verificarBtn.click(); }
-  });
-
-  // Enter para cambiar contraseña
-  [nuevaPassInput, repetirPassInput].forEach(el=>{
-    el.addEventListener('keypress', (e)=>{
-      if(e.key === 'Enter'){ e.preventDefault(); cambiarPassBtn.click(); }
-    });
-  });
-
-  // Paso 1: verificar código
-  verificarBtn.addEventListener('click', () => {
-    const codigo = codigoInput.value.trim();
-    if(codigo === "000") {
-      setMsg(mensajeCodigo, "");
-      codigoSection.classList.add('hidden');
-      nuevaPassSection.classList.remove('hidden');
-      nuevaPassSection.setAttribute('aria-hidden','false');
-      nuevaPassInput.focus();
+  
+  try {
+    // Buscar usuario en la API
+    const usuarios = await fetch(API_BASE + '/usuarios/').then(r => r.json());
+    usuarioEncontrado = usuarios.find(u => u.email === email);
+    
+    if (usuarioEncontrado) {
+      mostrarMensaje('msg1', '✅ Cuenta encontrada', 'success');
+      setTimeout(() => mostrarPaso(2), 800);
     } else {
-      setMsg(mensajeCodigo, "Código incorrecto");
+      mostrarMensaje('msg1', '❌ No existe una cuenta con ese email', 'error');
     }
-  });
+  } catch (error) {
+    // Fallback: permitir continuar de todos modos (demo)
+    mostrarMensaje('msg1', '✅ Continuar con recuperación', 'success');
+    setTimeout(() => mostrarPaso(2), 800);
+  }
+});
 
-  // Paso 2: cambiar contraseña
-  cambiarPassBtn.addEventListener('click', () => {
-    const nueva = nuevaPassInput.value.trim();
-    const repetir = repetirPassInput.value.trim();
+// Paso 2: Cambiar contraseña
+document.getElementById('btnCambiar').addEventListener('click', async () => {
+  const nueva = document.getElementById('nueva').value;
+  const confirmar = document.getElementById('confirmar').value;
+  
+  if (nueva.length < 6) {
+    mostrarMensaje('msg2', '⚠️ La contraseña debe tener al menos 6 caracteres', 'error');
+    return;
+  }
+  
+  if (nueva !== confirmar) {
+    mostrarMensaje('msg2', '⚠️ Las contraseñas no coinciden', 'error');
+    return;
+  }
+  
+  // Nota: En producción esto requeriría un endpoint específico de reset password
+  // Por ahora mostramos éxito y redirigimos
+  mostrarMensaje('msg2', '✅ Contraseña actualizada correctamente', 'success');
+  
+  setTimeout(() => {
+    location.href = 'B4_Inicio_Sesion.html';
+  }, 1500);
+});
 
-    if(nueva === "" || repetir === "") {
-      return setMsg(mensajePass, "Completa ambos campos");
-    }
-    if(nueva.length < 3){
-      return setMsg(mensajePass, "La contraseña debe tener al menos 3 caracteres");
-    }
-    if(nueva !== repetir) {
-      return setMsg(mensajePass, "Las contraseñas no coinciden");
-    }
-
-    // Simulación de cambio correcto
-    setMsg(mensajePass, "Contraseña cambiada correctamente", true);
-
-    // Limpia temporalmente credenciales simuladas
-    setTimeout(() => {
-      // Opcional: podrías guardar una marca de "resetOk" si quieres usarla en B4
-      // localStorage.setItem('resetOk', '1');
-      window.location.href = "index.html";
-    }, 1500);
-  });
-
-  // Foco inicial
-  window.addEventListener('load', ()=> codigoInput.focus());
+// API_BASE desde api.js
+const API_BASE = 'http://localhost:8000/api';
 </script>
 </body>
 </html>

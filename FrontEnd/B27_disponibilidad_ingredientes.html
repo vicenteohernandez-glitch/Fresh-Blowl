@@ -1,97 +1,257 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>B27: Disponibilidad de Ingredientes</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
-
-<style>
-  body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: url('https://images.unsplash.com/photo-1511690656952-34342bb7c2f2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080') no-repeat center center fixed;
-    background-size: cover;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-  }
-
-  .container {
-    background-color: rgba(255,255,255,0.95);
-    padding: 30px;
-    border-radius: 12px;
-    text-align: center;
-    box-shadow: 0px 4px 15px rgba(0,0,0,0.3);
-    width: 380px;
-  }
-
-  .ingrediente {
-    font-size: 18px;
-    font-weight: bold;
-  }
-
-  .available { color: #27ae60; }
-  .not-available { color: #c0392b; text-decoration: line-through; }
-
-  .toggle-btn {
-    background-color: #27ae60;
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 6px;
-    margin-top: 5px;
-    cursor: pointer;
-    width: 100%;
-  }
-
-  .toggle-btn.off {
-    background-color: #c0392b;
-  }
-
-  a {
-    color: #27ae60;
-    margin-top: 15px;
-    display: inline-block;
-    text-decoration: none;
-  }
-  a:hover { text-decoration: underline; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Disponibilidad de Ingredientes - Fresh Bowl</title>
+  <link rel="stylesheet" href="estilos.css" />
+  <style>
+    .container { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
+    h1 { text-align: center; color: #2e7d32; margin-bottom: 2rem; }
+    
+    .filters {
+      display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;
+      align-items: center; justify-content: space-between;
+    }
+    .filter-group { display: flex; gap: 0.5rem; align-items: center; }
+    .filter-group label { font-weight: 500; }
+    .filter-group select, .filter-group input {
+      padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px;
+    }
+    
+    .ingredients-table {
+      width: 100%; border-collapse: collapse; background: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden;
+    }
+    .ingredients-table th, .ingredients-table td {
+      padding: 1rem; text-align: left; border-bottom: 1px solid #eee;
+    }
+    .ingredients-table th { background: #4caf50; color: #fff; font-weight: 600; }
+    .ingredients-table tr:hover { background: #f9f9f9; }
+    
+    .badge {
+      display: inline-block; padding: 0.25rem 0.75rem; border-radius: 20px;
+      font-size: 0.85rem; font-weight: 500;
+    }
+    .badge.disponible { background: #c8e6c9; color: #2e7d32; }
+    .badge.no-disponible { background: #ffcdd2; color: #c62828; }
+    .badge.bajo-stock { background: #fff3e0; color: #e65100; }
+    
+    .toggle-btn {
+      padding: 0.5rem 1rem; border: none; border-radius: 4px;
+      cursor: pointer; font-weight: 500; transition: all 0.2s;
+    }
+    .toggle-btn.activar { background: #4caf50; color: #fff; }
+    .toggle-btn.desactivar { background: #f44336; color: #fff; }
+    .toggle-btn:hover { opacity: 0.9; transform: scale(1.02); }
+    
+    .stock-display { font-weight: 600; }
+    .stock-display.bajo { color: #e65100; }
+    .stock-display.normal { color: #2e7d32; }
+    .stock-display.agotado { color: #c62828; }
+    
+    .loading { text-align: center; padding: 2rem; color: #666; }
+    .error-msg { background: #ffebee; color: #c62828; padding: 1rem; border-radius: 8px; text-align: center; }
+    .success-msg { background: #e8f5e9; color: #2e7d32; padding: 1rem; border-radius: 8px; text-align: center; }
+    
+    .empty-state { text-align: center; padding: 3rem; color: #666; }
+    .empty-state svg { width: 80px; height: 80px; margin-bottom: 1rem; opacity: 0.5; }
+    
+    .back-link { display: inline-block; margin-bottom: 1rem; color: #4caf50; text-decoration: none; }
+    .back-link:hover { text-decoration: underline; }
+  </style>
 </head>
-
 <body>
-<div class="container">
-  <h3>Disponibilidad de Ingredientes</h3>
+  <div class="container">
+    <a href="index.html" class="back-link">← Volver al inicio</a>
+    
+    <h1>🥬 Disponibilidad de Ingredientes</h1>
+    
+    <div class="filters">
+      <div class="filter-group">
+        <label for="filterDisponible">Estado:</label>
+        <select id="filterDisponible">
+          <option value="">Todos</option>
+          <option value="true">Disponibles</option>
+          <option value="false">No disponibles</option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label for="filterAdicional">Tipo:</label>
+        <select id="filterAdicional">
+          <option value="">Todos</option>
+          <option value="true">Adicionales</option>
+          <option value="false">Base</option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label for="searchInput">Buscar:</label>
+        <input type="text" id="searchInput" placeholder="Nombre del ingrediente..." />
+      </div>
+    </div>
+    
+    <div id="mensaje"></div>
+    
+    <div id="tableContainer">
+      <p class="loading">Cargando ingredientes...</p>
+    </div>
+  </div>
 
-  <div class="ingrediente available" id="tomate">Tomate 🍅</div>
-  <button class="toggle-btn" onclick="toggle('tomate', this)">Deshabilitar Tomate</button>
-
-  <div class="ingrediente available" id="lechuga">Lechuga 🥬</div>
-  <button class="toggle-btn" onclick="toggle('lechuga', this)">Deshabilitar Lechuga</button>
-
-  <div class="ingrediente available" id="pollo">Pollo 🍗</div>
-  <button class="toggle-btn" onclick="toggle('pollo', this)">Deshabilitar Pollo</button>
-
-  <a href="index.html">Volver al inicio</a>
-</div>
-
-<script>
-function toggle(id, btn) {
-  const item = document.getElementById(id);
-  const isDisabled = item.classList.contains("not-available");
-
-  if (isDisabled) {
-    item.classList.remove("not-available");
-    item.classList.add("available");
-    btn.textContent = "Deshabilitar " + item.textContent;
-    btn.classList.remove("off");
-  } else {
-    item.classList.remove("available");
-    item.classList.add("not-available");
-    btn.textContent = "Habilitar " + item.textContent;
-    btn.classList.add("off");
-  }
-}
-</script>
+  <script src="api.js"></script>
+  <script>
+    let ingredientesData = [];
+    
+    async function cargarIngredientes() {
+      const container = document.getElementById('tableContainer');
+      container.innerHTML = '<p class="loading">Cargando ingredientes...</p>';
+      
+      try {
+        const ingredientes = await API.getIngredientes();
+        
+        if (!ingredientes || ingredientes.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+              <h3>No hay ingredientes registrados</h3>
+              <p>Agrega ingredientes desde el panel de administración.</p>
+            </div>
+          `;
+          return;
+        }
+        
+        ingredientesData = ingredientes;
+        renderTable(ingredientes);
+        
+      } catch (err) {
+        container.innerHTML = `<div class="error-msg">Error al cargar ingredientes: ${err.message}</div>`;
+      }
+    }
+    
+    function renderTable(ingredientes) {
+      const container = document.getElementById('tableContainer');
+      
+      if (ingredientes.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <h3>No se encontraron ingredientes</h3>
+            <p>Prueba con otros filtros.</p>
+          </div>
+        `;
+        return;
+      }
+      
+      let html = `
+        <table class="ingredients-table">
+          <thead>
+            <tr>
+              <th>Ingrediente</th>
+              <th>Tipo</th>
+              <th>Precio Adicional</th>
+              <th>Stock</th>
+              <th>Estado</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+      
+      ingredientes.forEach(ing => {
+        const stock = ing.stock ?? 100;
+        const stockMinimo = ing.stock_minimo ?? 10;
+        const disponible = ing.disponible !== false;
+        
+        let stockClass = 'normal';
+        let stockBadge = '';
+        if (stock <= 0) {
+          stockClass = 'agotado';
+          stockBadge = '<span class="badge no-disponible">Agotado</span>';
+        } else if (stock <= stockMinimo) {
+          stockClass = 'bajo';
+          stockBadge = '<span class="badge bajo-stock">Bajo</span>';
+        }
+        
+        html += `
+          <tr data-id="${ing._id}">
+            <td><strong>${ing.nombre}</strong></td>
+            <td>${ing.adicional ? '➕ Adicional' : '🥗 Base'}</td>
+            <td>${ing.adicional ? '$' + (ing.precio_adicional || 0).toLocaleString() : '-'}</td>
+            <td>
+              <span class="stock-display ${stockClass}">${stock} unidades</span>
+              ${stockBadge}
+            </td>
+            <td>
+              <span class="badge ${disponible ? 'disponible' : 'no-disponible'}">
+                ${disponible ? '✓ Disponible' : '✗ No disponible'}
+              </span>
+            </td>
+            <td>
+              <button class="toggle-btn ${disponible ? 'desactivar' : 'activar'}" 
+                      onclick="toggleDisponibilidad('${ing._id}', ${!disponible})">
+                ${disponible ? 'Desactivar' : 'Activar'}
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+      
+      html += '</tbody></table>';
+      container.innerHTML = html;
+    }
+    
+    async function toggleDisponibilidad(id, nuevoEstado) {
+      const msgDiv = document.getElementById('mensaje');
+      
+      try {
+        const result = await API.updateIngrediente(id, { disponible: nuevoEstado });
+        
+        if (result) {
+          msgDiv.innerHTML = `<div class="success-msg">✓ Ingrediente ${nuevoEstado ? 'activado' : 'desactivado'} correctamente</div>`;
+          setTimeout(() => msgDiv.innerHTML = '', 3000);
+          
+          // Recargar datos
+          await cargarIngredientes();
+          aplicarFiltros();
+        } else {
+          throw new Error('No se pudo actualizar');
+        }
+      } catch (err) {
+        msgDiv.innerHTML = `<div class="error-msg">Error: ${err.message}</div>`;
+      }
+    }
+    
+    function aplicarFiltros() {
+      const disponible = document.getElementById('filterDisponible').value;
+      const adicional = document.getElementById('filterAdicional').value;
+      const busqueda = document.getElementById('searchInput').value.toLowerCase();
+      
+      let filtrados = ingredientesData;
+      
+      if (disponible !== '') {
+        const bool = disponible === 'true';
+        filtrados = filtrados.filter(ing => (ing.disponible !== false) === bool);
+      }
+      
+      if (adicional !== '') {
+        const bool = adicional === 'true';
+        filtrados = filtrados.filter(ing => ing.adicional === bool);
+      }
+      
+      if (busqueda) {
+        filtrados = filtrados.filter(ing => ing.nombre.toLowerCase().includes(busqueda));
+      }
+      
+      renderTable(filtrados);
+    }
+    
+    // Event listeners
+    document.getElementById('filterDisponible').addEventListener('change', aplicarFiltros);
+    document.getElementById('filterAdicional').addEventListener('change', aplicarFiltros);
+    document.getElementById('searchInput').addEventListener('input', aplicarFiltros);
+    
+    // Inicializar
+    cargarIngredientes();
+  </script>
 </body>
 </html>

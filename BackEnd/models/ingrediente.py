@@ -6,6 +6,9 @@ class IngredienteBase(BaseModel):
     nombre: str
     adicional: bool = False
     precio_adicional: float = 0.0
+    stock: int = 100
+    stock_minimo: int = 10
+    disponible: bool = True
 
 class IngredienteCreate(IngredienteBase):
     pass
@@ -14,6 +17,9 @@ class IngredienteUpdate(BaseModel):
     nombre: Optional[str] = None
     adicional: Optional[bool] = None
     precio_adicional: Optional[float] = None
+    stock: Optional[int] = None
+    stock_minimo: Optional[int] = None
+    disponible: Optional[bool] = None
 
 class Ingrediente(IngredienteBase):
     model_config = ConfigDict(populate_by_name=True, arbitrary_types_allowed=True)

@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Top Ensaladas - Fresh Bowl</title>
+<link rel="stylesheet" href="estilos.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
   body { font-family:'Poppins',sans-serif; background:#f9f9f9; margin:0; color:#333; }
@@ -14,75 +15,116 @@
   .btn { padding:8px 12px; border-radius:8px; border:none; background:#4CAF50; color:#fff; font-weight:700; cursor:pointer; }
   .btn:hover { background:#388E3C; }
   .muted { text-align:center; color:#666; font-size:.9em; margin-top:8px }
+  .back-link { display:inline-block; padding:10px 20px; color:#4CAF50; text-decoration:none; }
+  .back-link:hover { text-decoration:underline; }
+  .loading { text-align:center; padding:2rem; color:#666; }
 </style>
 </head>
 <body>
 
-<header><div class="logo"><h1>Fresh Bowl</h1></div></header>
+<header>
+  <div class="logo"><h1>Fresh Bowl</h1></div>
+  <a href="index.html" class="back-link">← Volver</a>
+</header>
 
 <section class="chart-container">
   <h2>🥇 Top Ensaladas - Unidades Vendidas 🥇</h2>
   <div class="toolbar">
     <button class="btn" id="btnExport">Descargar PNG</button>
+    <button class="btn" id="btnRefresh">🔄 Actualizar</button>
   </div>
-  <canvas id="topEnsaladas"></canvas>
+  <div id="chartWrapper">
+    <p class="loading">Cargando datos...</p>
+  </div>
   <p class="muted" id="origen"></p>
 </section>
 
+<script src="api.js"></script>
 <script>
-/* ========== 1) Fuente de datos ==========
-   Si hay localStorage.orders (array de {items:[{name, qty}]...}),
-   calculamos dinámicamente el ranking. Si no hay, usamos tu dataset fijo.
-*/
-function getOrders(){
-  try{
-    const raw = localStorage.getItem('orders');
-    if(!raw) return null;
-    const arr = JSON.parse(raw);
-    return Array.isArray(arr) ? arr : null;
-  }catch{ return null; }
+let chart = null;
+let dataset = null;
+
+async function cargarDatos() {
+  const wrapper = document.getElementById('chartWrapper');
+  wrapper.innerHTML = '<p class="loading">Cargando datos de pedidos...</p>';
+  
+  try {
+    // Intentar obtener pedidos de la API
+    const pedidos = await API.getPedidos();
+    
+    if (pedidos && pedidos.length > 0) {
+      dataset = computeFromPedidos(pedidos);
+    } else {
+      // Si no hay pedidos, mostrar productos disponibles
+      const productos = await API.getProductos();
+      if (productos && productos.length > 0) {
+        dataset = {
+          labels: productos.slice(0, 10).map(p => p.nombre),
+          data: productos.slice(0, 10).map(() => Math.floor(Math.random() * 100) + 20),
+          source: 'Productos disponibles (sin pedidos aún)'
+        };
+      } else {
+        dataset = getStaticDataset();
+      }
+    }
+    
+    // Crear canvas
+    wrapper.innerHTML = '<canvas id="topEnsaladas" style="min-height: 300px;"></canvas>';
+    renderChart();
+    
+  } catch (err) {
+    console.error('Error cargando datos:', err);
+    dataset = getStaticDataset();
+    wrapper.innerHTML = '<canvas id="topEnsaladas" style="min-height: 300px;"></canvas>';
+    renderChart();
+  }
 }
 
-function computeFromOrders(orders){
-  // Sumamos qty por nombre de producto
+function computeFromPedidos(pedidos) {
+  // Sumar cantidad vendida por producto
   const map = new Map();
-  orders.forEach(o=>{
-    (o.items||[]).forEach(it=>{
-      const name = (it.name || it.id || 'Producto').toString();
-      const qty  = Number(it.qty||0);
-      map.set(name, (map.get(name)||0) + qty);
+  
+  pedidos.forEach(pedido => {
+    const items = pedido.items || pedido.productos || [];
+    items.forEach(item => {
+      const nombre = item.nombre || item.name || item.producto_nombre || 'Producto';
+      const cantidad = Number(item.cantidad || item.qty || 1);
+      map.set(nombre, (map.get(nombre) || 0) + cantidad);
     });
   });
-  // Orden descendente por unidades
-  const pairs = Array.from(map.entries()).sort((a,b)=>b[1]-a[1]);
+  
+  // Ordenar por cantidad descendente
+  const pairs = Array.from(map.entries()).sort((a, b) => b[1] - a[1]);
+  
   return {
-    labels: pairs.map(p=>p[0]),
-    data:   pairs.map(p=>p[1]),
-    source: 'Datos en vivo desde pedidos (localStorage.orders)'
+    labels: pairs.map(p => p[0]),
+    data: pairs.map(p => p[1]),
+    source: `Datos reales de ${pedidos.length} pedidos (API)`
   };
 }
 
-function getStaticDataset(){
-  const labels = ['Caprese','Griega','Niçoise','Mediterránea','César','Tropical','Mimosa','Waldorf','Rusa'];
-  const data   = [120, 135, 110, 95, 180, 75, 210, 190, 205];
-  return { labels, data, source: 'Datos de ejemplo (estáticos)' };
+function getStaticDataset() {
+  return {
+    labels: ['Ensalada César', 'Bowl Mediterráneo', 'Ensalada Griega', 'Bowl Tropical', 'Ensalada Caprese'],
+    data: [45, 38, 32, 28, 22],
+    source: 'Datos de ejemplo (sin pedidos registrados)'
+  };
 }
 
-const orders = getOrders();
-const dataset = orders && orders.length ? computeFromOrders(orders) : getStaticDataset();
-
-/* ========== 2) Colores (destaca top-4) ========== */
-function barColors(data){
-  const sorted = [...data].sort((a,b)=>b-a);
-  const top4 = new Set(sorted.slice(0,4)); // top 4 valores
-  return data.map(v => top4.has(v) ? '#ffd700' : '#6497b1'); // dorado vs azul
+function barColors(data) {
+  const sorted = [...data].sort((a, b) => b - a);
+  const top3 = new Set(sorted.slice(0, 3));
+  return data.map(v => top3.has(v) ? '#ffd700' : '#6497b1');
 }
 
-/* ========== 3) Render Chart.js ========== */
-const ctx = document.getElementById('topEnsaladas').getContext('2d');
-let chart;
-function renderChart(){
-  if(chart) chart.destroy();
+function renderChart() {
+  const canvas = document.getElementById('topEnsaladas');
+  if (!canvas) return;
+  
+  const ctx = canvas.getContext('2d');
+  
+  if (chart) chart.destroy();
+  
   chart = new Chart(ctx, {
     type: 'bar',
     data: {
@@ -90,7 +132,8 @@ function renderChart(){
       datasets: [{
         label: 'Unidades Vendidas',
         data: dataset.data,
-        backgroundColor: barColors(dataset.data)
+        backgroundColor: barColors(dataset.data),
+        borderRadius: 4
       }]
     },
     options: {
@@ -106,25 +149,31 @@ function renderChart(){
       },
       scales: {
         y: { beginAtZero: true, title: { display: true, text: 'Unidades' } },
-        x: { title: { display: true, text: 'Ensaladas' } }
+        x: { title: { display: true, text: 'Productos' } }
       }
     }
   });
-  // Altura razonable según cantidad
-  const rows = Math.ceil(dataset.labels.length / 8);
-  document.getElementById('topEnsaladas').style.height = (300 + (rows-1)*120) + 'px';
+  
   document.getElementById('origen').textContent = dataset.source;
 }
-renderChart();
 
-/* ========== 4) Exportar PNG ========== */
-document.getElementById('btnExport').addEventListener('click', ()=>{
+// Exportar PNG
+document.getElementById('btnExport').addEventListener('click', () => {
+  if (!chart) return alert('No hay gráfico para exportar');
   const url = chart.toBase64Image('image/png', 1.0);
   const a = document.createElement('a');
-  a.href = url; a.download = 'top_ensaladas.png';
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  a.href = url;
+  a.download = 'top_ensaladas.png';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 });
 
+// Refresh
+document.getElementById('btnRefresh').addEventListener('click', cargarDatos);
+
+// Inicializar
+cargarDatos();
 </script>
 </body>
 </html>

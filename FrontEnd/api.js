@@ -169,10 +169,41 @@
 
   // ============= INGREDIENTES =============
   
-  async function getIngredientes(adicional = null) {
+  async function getIngredientes(adicional = null, disponible = null) {
     let url = `${API_BASE}/ingredientes/`;
-    if (adicional !== null) url += `?adicional=${adicional}`;
+    const params = [];
+    if (adicional !== null) params.push(`adicional=${adicional}`);
+    if (disponible !== null) params.push(`disponible=${disponible}`);
+    if (params.length > 0) url += `?${params.join('&')}`;
     return await safeFetch(url);
+  }
+
+  async function getIngrediente(ingredienteId) {
+    return await safeFetch(`${API_BASE}/ingredientes/${ingredienteId}`);
+  }
+
+  async function getAlertasStock() {
+    return await safeFetch(`${API_BASE}/ingredientes/alertas`);
+  }
+
+  async function updateIngrediente(ingredienteId, datos) {
+    return await safeFetch(`${API_BASE}/ingredientes/${ingredienteId}`, {
+      method: "PUT",
+      body: JSON.stringify(datos),
+    });
+  }
+
+  async function crearIngrediente(datos) {
+    return await safeFetch(`${API_BASE}/ingredientes/`, {
+      method: "POST",
+      body: JSON.stringify(datos),
+    });
+  }
+
+  async function deleteIngrediente(ingredienteId) {
+    return await safeFetch(`${API_BASE}/ingredientes/${ingredienteId}`, {
+      method: "DELETE",
+    });
   }
 
   // ============= CARRITO (Local + Sync con Backend) =============
@@ -317,7 +348,14 @@
     // Productos
     getProductos,
     getProducto,
+    
+    // Ingredientes
     getIngredientes,
+    getIngrediente,
+    getAlertasStock,
+    updateIngrediente,
+    crearIngrediente,
+    deleteIngrediente,
     
     // Categorías
     getCategorias,

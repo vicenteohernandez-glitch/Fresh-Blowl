@@ -1,128 +1,333 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>B29: Alertas de Agotamiento</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
-
-<style>
-  body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080') no-repeat center center fixed;
-    background-size: cover;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-  }
-
-  .container {
-    background-color: rgba(255,255,255,0.95);
-    padding: 30px;
-    border-radius: 12px;
-    text-align: center;
-    box-shadow: 0px 4px 15px rgba(0,0,0,0.3);
-    width: 360px;
-  }
-
-  select, input {
-    width: 100%;
-    padding: 10px;
-    margin-top: 8px;
-    border-radius: 6px;
-  }
-
-  button {
-    background-color: #d35400;
-    color: white;
-    border: none;
-    padding: 10px;
-    width: 100%;
-    border-radius: 6px;
-    margin-top: 12px;
-    cursor: pointer;
-  }
-
-  button:hover { background-color: #e67e22; }
-
-  .alerta { color: #c0392b; font-weight: bold; margin-top: 10px; }
-  .ok { color: #27ae60; font-weight: bold; margin-top: 10px; }
-
-  .progress-bg {
-    width: 100%;
-    background: #ddd;
-    height: 10px;
-    border-radius: 5px;
-    margin-top: 8px;
-  }
-  .progress-fill {
-    height: 10px;
-    border-radius: 5px;
-    transition: width .5s;
-    background: #27ae60;
-  }
-
-  a { margin-top: 15px; display: inline-block; color: #d35400; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Alertas de Agotamiento - Fresh Bowl</title>
+  <link rel="stylesheet" href="estilos.css" />
+  <style>
+    .container { max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+    h1 { text-align: center; color: #2e7d32; margin-bottom: 0.5rem; }
+    .subtitle { text-align: center; color: #666; margin-bottom: 2rem; }
+    
+    .alerts-summary {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem; margin-bottom: 2rem;
+    }
+    
+    .summary-card {
+      padding: 1.5rem; border-radius: 12px; text-align: center;
+    }
+    .summary-card.critical {
+      background: linear-gradient(135deg, #f44336, #e53935);
+      color: #fff;
+    }
+    .summary-card.warning {
+      background: linear-gradient(135deg, #ff9800, #ffa726);
+      color: #fff;
+    }
+    .summary-card.ok {
+      background: linear-gradient(135deg, #4caf50, #66bb6a);
+      color: #fff;
+    }
+    .summary-card .number { font-size: 2.5rem; font-weight: 700; }
+    .summary-card .label { font-size: 0.9rem; opacity: 0.9; }
+    
+    .section-title {
+      font-size: 1.25rem; color: #333; margin: 2rem 0 1rem;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    
+    .alert-list { list-style: none; padding: 0; margin: 0; }
+    
+    .alert-item {
+      background: #fff; border-radius: 8px; padding: 1rem 1.5rem;
+      margin-bottom: 0.75rem; display: flex; justify-content: space-between;
+      align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      transition: transform 0.2s;
+    }
+    .alert-item:hover { transform: translateX(4px); }
+    
+    .alert-item.critical { border-left: 4px solid #f44336; }
+    .alert-item.warning { border-left: 4px solid #ff9800; }
+    
+    .alert-info { flex: 1; }
+    .alert-info .name { font-weight: 600; color: #333; font-size: 1.1rem; }
+    .alert-info .details { color: #666; font-size: 0.9rem; margin-top: 0.25rem; }
+    
+    .alert-badge {
+      padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.8rem;
+      font-weight: 600; margin-left: 1rem;
+    }
+    .alert-badge.critical { background: #ffebee; color: #c62828; }
+    .alert-badge.warning { background: #fff3e0; color: #e65100; }
+    
+    .alert-actions { display: flex; gap: 0.5rem; margin-left: 1rem; }
+    .btn-action {
+      padding: 0.5rem 1rem; border: none; border-radius: 4px;
+      cursor: pointer; font-weight: 500; font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+    .btn-restock { background: #4caf50; color: #fff; }
+    .btn-disable { background: #9e9e9e; color: #fff; }
+    .btn-action:hover { opacity: 0.9; transform: scale(1.02); }
+    
+    .no-alerts {
+      text-align: center; padding: 3rem; background: #e8f5e9;
+      border-radius: 12px; color: #2e7d32;
+    }
+    .no-alerts svg { width: 60px; height: 60px; margin-bottom: 1rem; }
+    .no-alerts h3 { margin: 0 0 0.5rem; }
+    
+    .loading { text-align: center; padding: 2rem; color: #666; }
+    .error-msg { background: #ffebee; color: #c62828; padding: 1rem; border-radius: 8px; text-align: center; }
+    
+    .modal {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;
+    }
+    .modal.active { display: flex; }
+    .modal-content {
+      background: #fff; padding: 2rem; border-radius: 12px; max-width: 400px; width: 90%;
+    }
+    .modal-content h3 { margin: 0 0 1rem; color: #333; }
+    .modal-content input {
+      width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px;
+      font-size: 1rem; margin-bottom: 1rem;
+    }
+    .modal-buttons { display: flex; gap: 0.5rem; }
+    .modal-buttons button { flex: 1; padding: 0.75rem; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; }
+    .modal-buttons .btn-confirm { background: #4caf50; color: #fff; }
+    .modal-buttons .btn-cancel { background: #eee; color: #666; }
+    
+    .back-link { display: inline-block; margin-bottom: 1rem; color: #4caf50; text-decoration: none; }
+    .back-link:hover { text-decoration: underline; }
+    
+    .refresh-btn {
+      background: #2196f3; color: #fff; border: none; padding: 0.5rem 1rem;
+      border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 0.5rem;
+      margin-left: auto;
+    }
+    .refresh-btn:hover { background: #1976d2; }
+    
+    .header-row { display: flex; align-items: center; margin-bottom: 1rem; }
+  </style>
 </head>
-
 <body>
-<div class="container">
-  <h3>Alerta de Agotamiento</h3>
-
-  <select id="ingrediente">
-    <option value="" disabled selected>Seleccione ingrediente</option>
-    <option value="Lechuga 🥬">Lechuga 🥬</option>
-    <option value="Pollo 🍗">Pollo 🍗</option>
-    <option value="Tomate 🍅">Tomate 🍅</option>
-    <option value="Queso 🧀">Queso 🧀</option>
-  </select>
-
-  <input type="number" id="stock" placeholder="Stock actual (ej: 3)">
-  <input type="number" id="minimo" placeholder="Umbral mínimo (por defecto 5)" value="5">
-
-  <div class="progress-bg">
-    <div id="barra" class="progress-fill" style="width: 100%;"></div>
+  <div class="container">
+    <a href="index.html" class="back-link">← Volver al inicio</a>
+    
+    <h1>🚨 Alertas de Agotamiento</h1>
+    <p class="subtitle">Monitoreo en tiempo real del stock de ingredientes</p>
+    
+    <div class="header-row">
+      <span id="lastUpdate" style="color: #888; font-size: 0.9rem;"></span>
+      <button class="refresh-btn" onclick="cargarAlertas()">
+        🔄 Actualizar
+      </button>
+    </div>
+    
+    <div id="content">
+      <p class="loading">Cargando alertas...</p>
+    </div>
+  </div>
+  
+  <!-- Modal para reabastecer -->
+  <div id="restockModal" class="modal">
+    <div class="modal-content">
+      <h3>📦 Reabastecer Ingrediente</h3>
+      <p id="restockName"></p>
+      <input type="number" id="restockAmount" placeholder="Cantidad a agregar" min="1" value="50" />
+      <div class="modal-buttons">
+        <button class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
+        <button class="btn-confirm" onclick="confirmarRestock()">Confirmar</button>
+      </div>
+    </div>
   </div>
 
-  <button id="verificar">Verificar</button>
-  <p id="mensaje"></p>
-
-  <a href="index.html">Volver al inicio</a>
-</div>
-
-<script>
-document.getElementById("verificar").addEventListener("click", () => {
-  const ingrediente = document.getElementById("ingrediente").value;
-  const stock = parseInt(document.getElementById("stock").value);
-  const minimo = parseInt(document.getElementById("minimo").value) || 5;
-  const msg = document.getElementById("mensaje");
-  const barra = document.getElementById("barra");
-
-  if (!ingrediente) {
-    msg.textContent = "Seleccione un ingrediente.";
-    msg.className = "alerta";
-    return;
-  }
-  if (isNaN(stock)) {
-    msg.textContent = "Ingrese un valor numérico válido.";
-    msg.className = "alerta";
-    return;
-  }
-
-  const porcentaje = Math.min(100, (stock / minimo) * 100);
-  barra.style.width = porcentaje + "%";
-  barra.style.background = stock < minimo ? "#c0392b" : "#27ae60";
-
-  if (stock < minimo) {
-    msg.textContent = `⚠️ Bajo stock de ${ingrediente} (${stock} unidades) — Alerta generada.`;
-    msg.className = "alerta";
-  } else {
-    msg.textContent = `✅ ${ingrediente} en buen nivel (${stock} unidades).`;
-    msg.className = "ok";
-  }
-});
-</script>
+  <script src="api.js"></script>
+  <script>
+    let currentIngrediente = null;
+    
+    async function cargarAlertas() {
+      const content = document.getElementById('content');
+      content.innerHTML = '<p class="loading">Cargando alertas...</p>';
+      
+      try {
+        const alertas = await API.getAlertasStock();
+        
+        document.getElementById('lastUpdate').textContent = 
+          `Última actualización: ${new Date().toLocaleTimeString()}`;
+        
+        if (!alertas || alertas.length === 0) {
+          content.innerHTML = `
+            <div class="no-alerts">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+              </svg>
+              <h3>¡Todo en orden!</h3>
+              <p>No hay ingredientes con stock bajo o agotados.</p>
+            </div>
+          `;
+          return;
+        }
+        
+        const agotados = alertas.filter(a => a.alerta === 'agotado');
+        const bajos = alertas.filter(a => a.alerta === 'bajo');
+        
+        let html = `
+          <div class="alerts-summary">
+            <div class="summary-card critical">
+              <div class="number">${agotados.length}</div>
+              <div class="label">Agotados</div>
+            </div>
+            <div class="summary-card warning">
+              <div class="number">${bajos.length}</div>
+              <div class="label">Stock Bajo</div>
+            </div>
+            <div class="summary-card ok">
+              <div class="number">${alertas.length}</div>
+              <div class="label">Total Alertas</div>
+            </div>
+          </div>
+        `;
+        
+        // Sección agotados
+        if (agotados.length > 0) {
+          html += `
+            <h2 class="section-title">🔴 Ingredientes Agotados (${agotados.length})</h2>
+            <ul class="alert-list">
+          `;
+          
+          agotados.forEach(ing => {
+            html += `
+              <li class="alert-item critical">
+                <div class="alert-info">
+                  <div class="name">${ing.nombre}</div>
+                  <div class="details">
+                    Stock: ${ing.stock ?? 0} | Mínimo: ${ing.stock_minimo ?? 10} |
+                    ${ing.adicional ? 'Adicional ($' + (ing.precio_adicional || 0) + ')' : 'Base'}
+                  </div>
+                </div>
+                <span class="alert-badge critical">AGOTADO</span>
+                <div class="alert-actions">
+                  <button class="btn-action btn-restock" onclick="abrirRestock('${ing._id}', '${ing.nombre}', ${ing.stock ?? 0})">
+                    + Reabastecer
+                  </button>
+                  <button class="btn-action btn-disable" onclick="desactivar('${ing._id}')">
+                    Desactivar
+                  </button>
+                </div>
+              </li>
+            `;
+          });
+          
+          html += '</ul>';
+        }
+        
+        // Sección bajo stock
+        if (bajos.length > 0) {
+          html += `
+            <h2 class="section-title">🟠 Stock Bajo (${bajos.length})</h2>
+            <ul class="alert-list">
+          `;
+          
+          bajos.forEach(ing => {
+            const porcentaje = Math.round(((ing.stock ?? 0) / (ing.stock_minimo ?? 10)) * 100);
+            html += `
+              <li class="alert-item warning">
+                <div class="alert-info">
+                  <div class="name">${ing.nombre}</div>
+                  <div class="details">
+                    Stock: ${ing.stock ?? 0} / ${ing.stock_minimo ?? 10} (${porcentaje}% del mínimo) |
+                    ${ing.adicional ? 'Adicional' : 'Base'}
+                  </div>
+                </div>
+                <span class="alert-badge warning">BAJO</span>
+                <div class="alert-actions">
+                  <button class="btn-action btn-restock" onclick="abrirRestock('${ing._id}', '${ing.nombre}', ${ing.stock ?? 0})">
+                    + Reabastecer
+                  </button>
+                </div>
+              </li>
+            `;
+          });
+          
+          html += '</ul>';
+        }
+        
+        content.innerHTML = html;
+        
+      } catch (err) {
+        content.innerHTML = `<div class="error-msg">Error al cargar alertas: ${err.message}</div>`;
+      }
+    }
+    
+    function abrirRestock(id, nombre, stockActual) {
+      currentIngrediente = { id, nombre, stockActual };
+      document.getElementById('restockName').textContent = `Ingrediente: ${nombre} (Stock actual: ${stockActual})`;
+      document.getElementById('restockAmount').value = 50;
+      document.getElementById('restockModal').classList.add('active');
+    }
+    
+    function cerrarModal() {
+      document.getElementById('restockModal').classList.remove('active');
+      currentIngrediente = null;
+    }
+    
+    async function confirmarRestock() {
+      if (!currentIngrediente) return;
+      
+      const cantidad = parseInt(document.getElementById('restockAmount').value) || 0;
+      if (cantidad <= 0) {
+        alert('Ingresa una cantidad válida');
+        return;
+      }
+      
+      const nuevoStock = currentIngrediente.stockActual + cantidad;
+      
+      try {
+        const result = await API.updateIngrediente(currentIngrediente.id, { 
+          stock: nuevoStock,
+          disponible: true // Reactivar si estaba desactivado
+        });
+        
+        if (result) {
+          cerrarModal();
+          alert(`✅ Stock actualizado a ${nuevoStock} unidades`);
+          cargarAlertas();
+        } else {
+          alert('Error al actualizar stock');
+        }
+      } catch (err) {
+        alert(`Error: ${err.message}`);
+      }
+    }
+    
+    async function desactivar(id) {
+      if (!confirm('¿Desactivar este ingrediente? No aparecerá en el menú.')) return;
+      
+      try {
+        const result = await API.updateIngrediente(id, { disponible: false });
+        if (result) {
+          alert('✅ Ingrediente desactivado');
+          cargarAlertas();
+        }
+      } catch (err) {
+        alert(`Error: ${err.message}`);
+      }
+    }
+    
+    // Cerrar modal al hacer clic fuera
+    document.getElementById('restockModal').addEventListener('click', function(e) {
+      if (e.target === this) cerrarModal();
+    });
+    
+    // Auto-refresh cada 30 segundos
+    setInterval(cargarAlertas, 30000);
+    
+    // Inicializar
+    cargarAlertas();
+  </script>
 </body>
 </html>
